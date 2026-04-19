@@ -135,6 +135,7 @@ void NetworkManager::update()
 			{
 				//client disconnected
 				mpPlayerCount--;
+				std::cout << "Player disconnected. Total Players: " << mpPlayerCount << std::endl;
 			}
 		}
 	}
@@ -152,6 +153,8 @@ void NetworkManager::update()
 			//host disconnected
 			mpIsHost = false;
 			mpPlayerCount = 0;
+			std::cout << "Host disconnected. Total Players: " << mpPlayerCount << std::endl;
+
 		}
 	}
 }

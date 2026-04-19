@@ -3,6 +3,7 @@ Author: Owen Tweedt
 Created: 4/18/26
 Last Modified: 4/18/26
 Desc: Class for managing network aspects. Uses classes from sf::Packet, sf::TcpSocket and sf::TcpListener.
+Currently includes a temp main for testing
 */
 
 #pragma once
