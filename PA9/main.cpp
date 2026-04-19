@@ -5,6 +5,7 @@ int main()
     NetworkManager nm;
     std::string choice = "";
 
+    //get user choice to host/join game
     std::cout << "1. Host Game\n2. Join Game\n" << std::endl;
     std::cin >> choice;
 

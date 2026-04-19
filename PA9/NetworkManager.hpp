@@ -12,7 +12,7 @@ Desc: Class for managing network aspects. Uses classes from sf::Packet, sf::TcpS
 class NetworkManager
 {
 public:
-	NetworkManager();
+	NetworkManager();	
 	~NetworkManager();
 	
 	bool startHost(); //opens the port for connection & starts listening for tcp packets

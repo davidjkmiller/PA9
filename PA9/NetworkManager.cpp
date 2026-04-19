@@ -28,7 +28,7 @@ bool NetworkManager::startHost()
 		return false; //can't host twice
 	}
 
-	mpListener.setBlocking(false);
+	mpListener.setBlocking(true); //listener set to blocking to make sure connections aren't missed
 
 	if (mpListener.listen(7777) != sf::Socket::Status::Done) //open port 7777, and if it is not open
 	{
@@ -46,6 +46,8 @@ bool NetworkManager::joinGame(sf::IpAddress ipAddress)
 	{
 		return false;
 	}
+
+	mpHostSocket.setBlocking(true); //set blocking to true to ensure theres a connection
 
 	if (mpHostSocket.connect(ipAddress, 7777) == sf::Socket::Status::Done)
 	{
@@ -117,6 +119,7 @@ void NetworkManager::update()
 		{
 			//client connected
 			mpPlayerCount++;
+			std::cout << "Player connected! Total Players: " << mpPlayerCount << std::endl;
 		}
 
 		for (int i = 0; i < mpPlayerCount; i++) //check if client sends host packets
