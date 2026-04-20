@@ -30,7 +30,7 @@ bool NetworkManager::startHost()
 
 	mpListener.setBlocking(true); //listener set to blocking to make sure connections aren't missed
 
-	if (mpListener.listen(7777) != sf::Socket::Status::Done) //open port 7777, and if it is not open
+	if (mpListener.listen(7777) != sf::Socket::Status::Done) //open port 7777, if it is not already open
 	{
 		return false; //port failed to open
 	}
@@ -139,7 +139,7 @@ void NetworkManager::update()
 			}
 		}
 	}
-	else
+	else //client side updates
 	{
 		sf::Socket::Status status = mpHostSocket.receive(packet); //get the status of the host
 		
@@ -153,8 +153,7 @@ void NetworkManager::update()
 			//host disconnected
 			mpIsHost = false;
 			mpPlayerCount = 0;
-			std::cout << "Host disconnected. Total Players: " << mpPlayerCount << std::endl;
-
+			std::cout << "Host disconnected." << std::endl;
 		}
 	}
 }
