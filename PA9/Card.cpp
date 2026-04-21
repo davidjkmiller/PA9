@@ -23,6 +23,7 @@ void Card::setSprite(string newSprite)
 	sprite = newSprite;
 }
 
+
 //GETTERS======================================================================================
 string Card::getSuit() const
 {
@@ -49,4 +50,11 @@ Card& Card::operator=(const Card& rhs)
 	return (*this);
 }
 
+//=============================================================================================
 
+ostream& operator<<(ostream& lhs, const Card rhs)
+{
+	lhs << rhs.getFace() << " of " << rhs.getSuit() << endl;
+
+	return lhs;
+}

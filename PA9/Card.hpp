@@ -1,4 +1,20 @@
-#include "TexasHoldem.hpp"
+#pragma once
+
+//Libraries
+#include <iostream>
+#include <stdlib.h>
+#include <time.h>
+#include<string>
+#include <random>
+#include <stack>
+
+using std::cin;
+using std::cout;
+using std::endl;
+using std::string;
+using std::istream;
+using std::ostream;
+using std::stack;
 
 class Card
 {
@@ -23,6 +39,13 @@ public:
 	string getSprite() const;
 
 	//member functions
+
+	//overloaded assignment operator
 	Card& operator=(const Card& rhs);
 
+	
+
 };
+
+//overloaded stream insertion operator
+ostream& operator<< (ostream& lhs, const Card rhs);

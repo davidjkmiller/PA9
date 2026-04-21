@@ -1,9 +1,16 @@
 #include "Deck.hpp"
 
-//GETTERS======================================================================================
-const Card* Deck::getDeck()
+//CONSTRUCTOR=================================================================================
+
+Deck::Deck()
 {
-	return deck;
+	this->initDeck();
+}
+
+//GETTERS======================================================================================
+const Card* Deck::getDeckInOrder()
+{
+	return deckInOrder;
 }
 
 //MEMBER FUNCTIONS=============================================================================
@@ -26,9 +33,9 @@ void Deck::initDeck()
 	{
 		for (faceIndex = 0; faceIndex < 13; faceIndex++)
 		{
-			deck[spriteIndex].setSuit(suit[suitIndex]);
-			deck[spriteIndex].setFace(face[faceIndex]);
-			deck[spriteIndex].setSprite(sprite[spriteIndex]);
+			deckInOrder[spriteIndex].setSuit(suit[suitIndex]);
+			deckInOrder[spriteIndex].setFace(face[faceIndex]);
+			deckInOrder[spriteIndex].setSprite(sprite[spriteIndex]);
 
 			++spriteIndex;
 		}
@@ -52,13 +59,43 @@ void Deck::shuffleDeck()
 		{
 
 			j = rand() % 52;
-			tempCard = deck[i];
-			deck[i] = deck[j];
-			deck[j] = tempCard;
+			tempCard = deckInOrder[i];
+			deckInOrder[i] = deckInOrder[j];
+			deckInOrder[j] = tempCard;
 
 
 		}
 	}
+
+	//push cards starting from the bottom of deckInOrder into the deck stack to maintain the order
+	for (i = 51; i >= 0; --i)
+	{
+		deck.push(deckInOrder[i]);
+	}
+}
+
+void Deck::deal(Player* p1, Player* p2, Player* p3, Player* p4)
+{
+	int count = 0;
+
+	//draw two cards from the deck for each player
+	while (count < 2)
+	{
+		p1->setHand(count, drawCard());						
+		p2->setHand(count, drawCard());
+		p3->setHand(count, drawCard());
+		p4->setHand(count, drawCard());
+
+		++count;
+	}
+}
+
+Card Deck::drawCard()
+{
+	Card card = deck.top(); //get top card
+	deck.pop();				//discard top card
+
+	return card;
 }
 
 
