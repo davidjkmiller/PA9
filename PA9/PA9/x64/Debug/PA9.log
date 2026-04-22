@@ -1,0 +1,5 @@
+﻿  NetworkManager.cpp
+C:\Users\otwee\source\repos\PA9\PA9\NetworkManager.cpp(119,23): warning C4834: discarding return value of function with [[nodiscard]] attribute
+  main.cpp
+  Generating Code...
+  PA9.vcxproj -> C:\Users\otwee\source\repos\PA9\PA9\x64\Debug\PA9.exe
