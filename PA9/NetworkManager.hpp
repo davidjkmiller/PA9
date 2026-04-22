@@ -16,6 +16,9 @@ public:
 	NetworkManager();	
 	~NetworkManager();
 	
+	bool getmpIsHost();
+	int getmpPlayerCount();
+
 	bool startHost(); //opens the port for connection & starts listening for tcp packets
 	bool joinGame(sf::IpAddress ipAddress); //connects to host
 	bool sendPacket(std::string data); //sends the game data

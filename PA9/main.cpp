@@ -37,6 +37,11 @@ int main()
             while (true)
             {
                 nm.update();
+                if (!nm.getmpIsHost() && nm.getmpPlayerCount() == 0)
+                {
+                    std::cout << "Disconnected from host." << std::endl;
+                    break;
+                }
             }
         }
         else

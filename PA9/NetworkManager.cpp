@@ -20,6 +20,16 @@ NetworkManager::~NetworkManager()
 	}
 }
 
+bool NetworkManager::getmpIsHost()
+{
+	return mpIsHost;
+}
+
+int NetworkManager::getmpPlayerCount()
+{
+	return mpPlayerCount;
+}
+
 bool NetworkManager::startHost()
 {
 	//check to see if the user trying to start host is the host
@@ -34,6 +44,8 @@ bool NetworkManager::startHost()
 	{
 		return false; //port failed to open
 	}
+
+	mpSelector.add(mpListener);
 
 	mpIsHost = true;
 	mpPlayerCount = 1;
@@ -115,27 +127,37 @@ void NetworkManager::update()
 	sf::Packet packet;
 	if (mpIsHost == true) //update checking the network if there is a server host
 	{
-		if (mpListener.accept(mpClientSockets[mpPlayerCount]) == sf::Socket::Status::Done) //check if a new client is trying to connect
+		if (mpSelector.wait(sf::milliseconds(10)))
 		{
-			//client connected
-			mpPlayerCount++;
-			std::cout << "Player connected! Total Players: " << mpPlayerCount << std::endl;
-		}
-
-		for (int i = 0; i < mpPlayerCount; i++) //check if client sends host packets
-		{
-			sf::Socket::Status status = mpClientSockets[i].receive(packet); //get the status of the clients
-			
-			if (status == sf::Socket::Status::Done)
+			if (mpSelector.isReady(mpListener))
 			{
-				//client sent packets to host
-				std::cout << "Client " << i << " sent packets to the host." << std::endl;
+				if (mpListener.accept(mpClientSockets[mpPlayerCount]) == sf::Socket::Status::Done) //check if a new client is trying to connect
+				{
+					//client connected
+					mpPlayerCount++;
+					std::cout << "Player connected! Total Players: " << mpPlayerCount << std::endl;
+					mpSelector.add(mpClientSockets[mpPlayerCount - 1]);
+				}
 			}
-			else if (status == sf::Socket::Status::Disconnected) //check if a client disconnects
+
+			for (int i = 0; i < mpPlayerCount; i++) //check if client sends host packets
 			{
-				//client disconnected
-				mpPlayerCount--;
-				std::cout << "Player disconnected. Total Players: " << mpPlayerCount << std::endl;
+				if (mpSelector.isReady(mpClientSockets[i]))
+				{
+					sf::Socket::Status status = mpClientSockets[i].receive(packet); //get the status of the clients
+
+					if (status == sf::Socket::Status::Done)
+					{
+						//client sent packets to host
+						std::cout << "Client " << i << " sent packets to the host." << std::endl;
+					}
+					else if (status == sf::Socket::Status::Disconnected) //check if a client disconnects
+					{
+						//client disconnected
+						mpPlayerCount--;
+						std::cout << "Player disconnected. Total Players: " << mpPlayerCount << std::endl;
+					}
+				}
 			}
 		}
 	}
