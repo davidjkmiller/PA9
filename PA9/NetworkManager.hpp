@@ -7,6 +7,7 @@ Currently includes a temp main for testing
 */
 
 #pragma once
+
 #include <SFML/Network.hpp>
 #include <iostream>
 

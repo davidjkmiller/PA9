@@ -14,8 +14,6 @@ void TexasHoldem::runApp()
 	//pointers to players that get assigned based on who is dealer
 	Player* Dealer, *player1, *player2, *player3;
 
-
-
 	do
 	{
 		do
