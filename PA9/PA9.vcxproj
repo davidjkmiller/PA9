@@ -19,11 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Card.cpp" />
+    <ClCompile Include="Deck.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="TexasHoldem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Card.hpp" />
+    <ClInclude Include="Deck.hpp" />
     <ClInclude Include="NetworkManager.hpp" />
+    <ClInclude Include="Player.hpp" />
+    <ClInclude Include="TexasHoldem.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
