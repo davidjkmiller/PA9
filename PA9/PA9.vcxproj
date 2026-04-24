@@ -25,6 +25,63 @@
   <ItemGroup>
     <ClInclude Include="NetworkManager.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\1.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\10 of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\10 of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\10 of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\10 of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\ace of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\ace of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\ace of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\ace of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\eight of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\eight of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\eight of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\eight of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\five of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\five of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\five of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\five of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\four of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\four of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\four of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\four of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\jack of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\jack of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\jack of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\jack of spade.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\king of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\king of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\king of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\king of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\nine of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\nine of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\nine of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\nine of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\queen of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\queen of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\queen of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\queen of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\seven of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\seven of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\seven of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\seven of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\six of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\six of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\six of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\six of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\three of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\three of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\three of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\three of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\two of clubs.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\two of diamonds.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\two of hearts.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\cards png\two of spades.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\menu.png" />
+    <Image Include="..\..\..\..\OneDrive\Desktop\title screen.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <ProjectGuid>{6C3083DF-0C1D-0444-156A-B576B5812863}</ProjectGuid>
