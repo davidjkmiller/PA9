@@ -33,6 +33,61 @@
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="TexasHoldem.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="1.png" />
+    <Image Include="10 of clubs.png" />
+    <Image Include="10 of diamonds.png" />
+    <Image Include="10 of hearts.png" />
+    <Image Include="10 of spades.png" />
+    <Image Include="ace of clubs.png" />
+    <Image Include="ace of diamonds.png" />
+    <Image Include="ace of hearts.png" />
+    <Image Include="ace of spades.png" />
+    <Image Include="eight of clubs.png" />
+    <Image Include="eight of diamonds.png" />
+    <Image Include="eight of hearts.png" />
+    <Image Include="eight of spades.png" />
+    <Image Include="five of clubs.png" />
+    <Image Include="five of diamonds.png" />
+    <Image Include="five of hearts.png" />
+    <Image Include="five of spades.png" />
+    <Image Include="four of clubs.png" />
+    <Image Include="four of diamonds.png" />
+    <Image Include="four of hearts.png" />
+    <Image Include="four of spades.png" />
+    <Image Include="jack of clubs.png" />
+    <Image Include="jack of diamonds.png" />
+    <Image Include="jack of hearts.png" />
+    <Image Include="jack of spade.png" />
+    <Image Include="king of clubs.png" />
+    <Image Include="king of diamonds.png" />
+    <Image Include="king of hearts.png" />
+    <Image Include="king of spades.png" />
+    <Image Include="nine of clubs.png" />
+    <Image Include="nine of diamonds.png" />
+    <Image Include="nine of hearts.png" />
+    <Image Include="nine of spades.png" />
+    <Image Include="queen of clubs.png" />
+    <Image Include="queen of diamonds.png" />
+    <Image Include="queen of hearts.png" />
+    <Image Include="queen of spades.png" />
+    <Image Include="seven of clubs.png" />
+    <Image Include="seven of diamonds.png" />
+    <Image Include="seven of hearts.png" />
+    <Image Include="seven of spades.png" />
+    <Image Include="six of clubs.png" />
+    <Image Include="six of diamonds.png" />
+    <Image Include="six of hearts.png" />
+    <Image Include="six of spades.png" />
+    <Image Include="three of clubs.png" />
+    <Image Include="three of diamonds.png" />
+    <Image Include="three of hearts.png" />
+    <Image Include="three of spades.png" />
+    <Image Include="two of clubs.png" />
+    <Image Include="two of diamonds.png" />
+    <Image Include="two of hearts.png" />
+    <Image Include="two of spades.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <ProjectGuid>{6C3083DF-0C1D-0444-156A-B576B5812863}</ProjectGuid>

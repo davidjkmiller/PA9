@@ -1,0 +1,3 @@
+If you're looking for info on sprites, go here for the overview: https://www.sfml-dev.org/tutorials/3.0/graphics/sprite/
+
+Here's the class documentation as well: https://www.sfml-dev.org/documentation/3.0.0/classsf_1_1Sprite.html
