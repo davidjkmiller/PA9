@@ -5,6 +5,7 @@ Card::Card()
 	suit = "\0";
 	face = "\0";
 	sprite = "\0";
+	rank = 0;
 }
 
 //SETTERS======================================================================================
@@ -23,6 +24,11 @@ void Card::setSprite(string newSprite)
 	sprite = newSprite;
 }
 
+void Card::setRank(int newRank)
+{
+	rank = newRank;
+}
+
 
 //GETTERS======================================================================================
 string Card::getSuit() const
@@ -38,6 +44,11 @@ string Card::getFace() const
 string Card::getSprite() const
 {
 	return sprite;
+}
+
+int Card::getRank() const
+{
+	return rank;
 }
 
 //MEMBER FUNCTIONS=============================================================================

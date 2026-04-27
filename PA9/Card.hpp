@@ -22,6 +22,7 @@ private:
 	string suit;
 	string face;
 	string sprite; //will change once sprite class exists
+	int rank;
 
 public:
 
@@ -32,18 +33,18 @@ public:
 	void setSuit(string newSuit);
 	void setFace(string newFace);
 	void setSprite(string newSprite);
+	void setRank(int newRank);
 
 	//getters
 	string getSuit() const;
 	string getFace() const;
 	string getSprite() const;
+	int getRank() const;
 
 	//member functions
 
 	//overloaded assignment operator
 	Card& operator=(const Card& rhs);
-
-	
 
 };
 

@@ -20,5 +20,8 @@ public:
 	//randomly selects the dealer from the four players
 	void chooseDealer(Player& p1, Player& p2, Player& p3, Player& p4);
 
-	
+	//determines the winner and awards the prize pool
+	void determineWinner(Player* players[], Card* Board, int numPlayers, float prizePool);
+
+
 };
