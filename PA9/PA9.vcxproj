@@ -23,6 +23,7 @@
     <ClCompile Include="Deck.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
+    <ClCompile Include="NetworkPlayer.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="TexasHoldem.cpp" />
   </ItemGroup>
@@ -30,6 +31,7 @@
     <ClInclude Include="Card.hpp" />
     <ClInclude Include="Deck.hpp" />
     <ClInclude Include="NetworkManager.hpp" />
+    <ClInclude Include="NetworkPlayer.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="TexasHoldem.hpp" />
   </ItemGroup>

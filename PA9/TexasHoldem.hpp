@@ -3,6 +3,7 @@
 //Headers
 #include "Deck.hpp"
 #include "NetworkManager.hpp"
+#include "NetworkPlayer.hpp"
 
 //enums for organization
 enum OPTIONS : int {PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT};

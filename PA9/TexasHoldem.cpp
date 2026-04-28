@@ -329,41 +329,48 @@ void TexasHoldem::runApp()
 
 					std::cout << "1. Host Game" << std::endl;
 					std::cout << "2. Join Game" << std::endl;
-					std::cin >> multiChoice;
+					std::cin >> multiChoice; //get user's choice if they are hosting or joining
 
 					if (multiChoice == 1)
 					{
-						if (mpNetwork.startHost())
+						if (mpNetwork.startHost()) //start hosting on local device
 						{
 							std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
 
 							int numPlayers = 0;
-							do
+							do //asks how many players are playing in the lobby
 							{
 								std::cout << "How many players? (2-4): " << std::endl;
 								std::cin >> numPlayers;
 							} while (numPlayers < 2 || numPlayers > 4);
 
-							while (mpNetwork.getmpPlayerCount() < numPlayers)
+							while (mpNetwork.getmpPlayerCount() < numPlayers) //waits for all players to connect
 							{
-								mpNetwork.update();
+								mpNetwork.update(); //keep checking for players
 								cout << "Waiting for players..." << mpNetwork.getmpPlayerCount() << "/" << numPlayers << "\r";
 							}
 							std::cout << "Players connected! Starting Game..." << std::endl;
+
+							NetworkPlayer np1(mpNetwork);
+							NetworkPlayer np2(mpNetwork);
+							NetworkPlayer np3(mpNetwork);
+
+							chooseDealer(p1, np1, np2, np3);
+							pressAnyKey();
 						}
 						else
 						{
 							std::cout << "Failed to host game." << std::endl;
 						}
 					}
-					else if (multiChoice == 2)
+					else if (multiChoice == 2) //if user is joining a game
 					{
 						std::string ipString;
 						std::cout << "Enter host's IP address: ";
 						std::cin >> ipString;
 
 						auto hostIp = sf::IpAddress::fromString(ipString);
-						if (mpNetwork.joinGame(hostIp.value()))
+						if (mpNetwork.joinGame(hostIp.value())) //join game to the user with the ip address they entered
 						{
 							std::cout << "Connected to host." << std::endl;
 						}
