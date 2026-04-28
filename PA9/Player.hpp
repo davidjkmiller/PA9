@@ -20,7 +20,7 @@ public:
 	Player();
 
 	//default destructor
-	~Player();
+	virtual ~Player();
 
 	//setters
 	void setHand(int cardNum, Card newCard);
@@ -42,7 +42,8 @@ public:
 	//member functions
 	void viewHand();
 
-	virtual float play(float& prizePool, float &currentBet, Card* Board) = 0;
+	// Added in uiChoice to work with mouse events
+	virtual float play(float& prizePool, float& currentBet, Card* Board, int uiChoice = 0) = 0;
 
 	//scores the players hand and returns an integer based on how good the hand is, and prints what hand the player had
 	int score(Card* board);
@@ -85,7 +86,8 @@ public:
 	using Player::Player;
 	
 	//member functions
-	float play(float& prizePool, float& currentBet, Card* Board) override;
+	// Added in uiChoice
+	float play(float& prizePool, float& currentBet, Card* Board, int uiChoice = 0) override;
 };
 
 class CPU : public Player
@@ -97,7 +99,8 @@ public:
 	//member functions
 
 	//currently just picks a random number between 1 and 3 to decide whether to call, raise, or fold
-	float play(float& prizePool, float& currentBet, Card* Board) override;
+	// Added in uiChoice
+	float play(float& prizePool, float& currentBet, Card* Board, int uiChoice = 0) override;
 };
 
 void pressAnyKey();

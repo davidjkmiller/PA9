@@ -16,6 +16,8 @@ Player::Player()
 	isDealer = 0;
 
 	hasFolded = 0;
+
+	handScore = 0;
 }
 
 //Destructor========================================================================
@@ -442,71 +444,38 @@ int Player::isPair(Card* combo)
 
 
 //Member Functions
-float HumanPlayer::play(float& prizePool, float& currentBet, Card* Board)
+float HumanPlayer::play(float& prizePool, float& currentBet, Card* Board, int uiChoice)
 {
 	int choice = 0;
 
 	//If player is unable to bet they must fold
 	if (currentBet > getBalance())
 	{
-		system("cls");
-		cout << "I'm afraid you are forced to fold my friend." << endl;
 		setFoldStatus(1);
-
-		pressAnyKey();
 
 		return 0;
 	}
 
-	do
-	{
-		system("cls");
-		cout << "The Board: " << endl;
-		if (Board[0].getFace() != "\0")  cout << "            " << Board[0] << endl;
-		if (Board[1].getFace() != "\0")  cout << "            " << Board[1] << endl;
-		if (Board[2].getFace() != "\0")  cout << "            " << Board[2] << endl;
-		if (Board[3].getFace() != "\0")  cout << "            " << Board[3] << endl;
-		if (Board[4].getFace() != "\0")  cout << "            " << Board[4] << endl;
-
-		cout << endl << "What is your move?" << endl << endl;
-		cout << "1. Call" << endl;
-		cout << "2. Raise" << endl;
-		cout << "3. Fold" << endl;
-
-		cout << endl << "Hand:" << endl;
-		viewHand();
-
-		cout << endl << "Balance: " << getBalance() << endl;
-
-		cin >> choice;
-
-	} while (choice < 1 || choice > 3);
-
-	if (choice == 1) //CALL
+	// Refactor to use uiChoice variable which gets updated through mouse clicks
+	if (uiChoice == 1) //CALL
 	{
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		cout << "You called." << endl << "New Balance: " << getBalance() << endl;
-		pressAnyKey();
 		return currentBet;
 	}
-	else if (choice == 2) //RAISE
+	else if (uiChoice == 2) //RAISE
 	{
 		currentBet *= 2; //double the bet
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		cout << "You raised." << endl << "New Balance: " << getBalance() << endl << "New Bet: " << currentBet << endl;
-		pressAnyKey();
 		return currentBet;
 	}
-	else if (choice == 3) //FOLD
+	else if (uiChoice == 3) //FOLD
 	{
 		setFoldStatus(1);
-		cout << "You folded." << endl;
-		pressAnyKey();
-
 		return 0;
 	}
+	return 0;
 
 }
 
@@ -514,19 +483,13 @@ float HumanPlayer::play(float& prizePool, float& currentBet, Card* Board)
 
 
 //Member functions===============================================================================
-float CPU::play(float& prizePool, float &currentBet, Card* Board)
-{
+float CPU::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) {
 	int choice = 0;
 
 	//If player is unable to bet they must fold
 	if (currentBet > getBalance())
 	{
-		system("cls");
-		cout << getPlayerID() << " was forced to fold!" << endl;
 		setFoldStatus(1);
-
-		pressAnyKey();
-
 		return 0;
 	}
 
@@ -538,7 +501,6 @@ float CPU::play(float& prizePool, float &currentBet, Card* Board)
 	{
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		cout << getPlayerID() << " called!" << endl;
 		pressAnyKey();
 
 		return currentBet;
@@ -548,7 +510,6 @@ float CPU::play(float& prizePool, float &currentBet, Card* Board)
 		currentBet *= 2; //double the bet
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		cout << getPlayerID() << " raised! The new bet is $" << currentBet << "." << endl; //*
 		pressAnyKey();
 
 		return currentBet;
@@ -556,12 +517,12 @@ float CPU::play(float& prizePool, float &currentBet, Card* Board)
 	else if (choice == 3) //FOLD
 	{
 		setFoldStatus(1);
-		cout << getPlayerID() << " folded!" << endl;
 		pressAnyKey();
 
 		return 0;
 	}
 
+	return 0;
 }
 
 void pressAnyKey()
