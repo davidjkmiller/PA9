@@ -320,10 +320,61 @@ void TexasHoldem::runApp()
 					break;
 
 				case MULTIPLAYER://-----------------------------------------------------------------------------
-
+				{
 					//enter name
+					//??
 
+					int multiChoice = 0;
+					system("cls");
+
+					std::cout << "1. Host Game" << std::endl;
+					std::cout << "2. Join Game" << std::endl;
+					std::cin >> multiChoice;
+
+					if (multiChoice == 1)
+					{
+						if (mpNetwork.startHost())
+						{
+							std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
+
+							int numPlayers = 0;
+							do
+							{
+								std::cout << "How many players? (2-4): " << std::endl;
+								std::cin >> numPlayers;
+							} while (numPlayers < 2 || numPlayers > 4);
+
+							while (mpNetwork.getmpPlayerCount() < numPlayers)
+							{
+								mpNetwork.update();
+								cout << "Waiting for players..." << mpNetwork.getmpPlayerCount() << "/" << numPlayers << "\r";
+							}
+							std::cout << "Players connected! Starting Game..." << std::endl;
+						}
+						else
+						{
+							std::cout << "Failed to host game." << std::endl;
+						}
+					}
+					else if (multiChoice == 2)
+					{
+						std::string ipString;
+						std::cout << "Enter host's IP address: ";
+						std::cin >> ipString;
+
+						auto hostIp = sf::IpAddress::fromString(ipString);
+						if (mpNetwork.joinGame(hostIp.value()))
+						{
+							std::cout << "Connected to host." << std::endl;
+						}
+						else
+						{
+							std::cout << "Failed to connect to host." << std::endl;
+						}
+					}
+					pressAnyKey();
 					break;
+				}
 
 				case BACK:
 

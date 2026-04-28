@@ -2,6 +2,7 @@
 
 //Headers
 #include "Deck.hpp"
+#include "NetworkManager.hpp"
 
 //enums for organization
 enum OPTIONS : int {PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT};
@@ -23,5 +24,7 @@ public:
 	//determines the winner and awards the prize pool
 	void determineWinner(Player* players[], Card* Board, int numPlayers, float prizePool);
 
+private:
+	NetworkManager mpNetwork;
 
 };
