@@ -33,10 +33,10 @@ PA9/[Oo]bj/
 PA9/[Oo]ut/
 PA9/[Bb]uild/
 PA9/x64/
-PA9/PA9/x64/
 PA9/x86/
 PA9/Debug/
 PA9/Release/
 vcpkg_installed/
 .vcpkg-root
 vcpkg-packages/
+/PA9/PA9/x64
