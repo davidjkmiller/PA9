@@ -25,7 +25,7 @@ public:
 	//determines the winner and awards the prize pool
 	void determineWinner(Player* players[], Card* Board, int numPlayers, float prizePool);
 
-	//
+	//game logic used in both singleplayer and multiplayer
 	void playGame(Player* p1, Player* p2, Player* p3, Player* p4);
 
 private:

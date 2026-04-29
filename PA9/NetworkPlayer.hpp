@@ -5,7 +5,8 @@
 class NetworkPlayer : public HumanPlayer
 {
 public:
-	NetworkPlayer(NetworkManager& network);
+	//constrcutor
+	NetworkPlayer(NetworkManager& network); 
 	
 	//override the play function for sending packets
 	float play(float& prizePool, float& currentBet, Card* Board, int uiChoice = 0) override;

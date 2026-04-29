@@ -52,21 +52,17 @@ void TexasHoldem::runApp()
 				case SINGLEPLAYER://---------------------------------------------------------------------------
 
 					//One human player, three CPU players
-
 					//STAGE 0: NON CYCLICAL SETUP
-
-
 					//random dealer selection only applicable for the very first round
 					system("cls");
 					chooseDealer(p1, c2, c3, c4);
 					pressAnyKey();
-					playGame(&p1, &c2, &c3, &c4);
+					playGame(&p1, &c2, &c3, &c4); //runs playGame function for game logic
 					break;
 				case MULTIPLAYER://-----------------------------------------------------------------------------
 				{
 					//enter name
-					//??
-
+					//?
 					int multiChoice = 0;
 					system("cls");
 
@@ -74,7 +70,7 @@ void TexasHoldem::runApp()
 					std::cout << "2. Join Game" << std::endl;
 					std::cin >> multiChoice; //get user's choice if they are hosting or joining
 
-					if (multiChoice == 1)
+					if (multiChoice == 1) //host side
 					{
 						if (mpNetwork.startHost()) //start hosting on local device
 						{
@@ -84,7 +80,7 @@ void TexasHoldem::runApp()
 							do //asks how many players are playing in the lobby
 							{
 								std::cout << "How many players? (2-4): " << std::endl;
-								std::cin >> numPlayers;
+								std::cin >> numPlayers; //gets the max amount of players for the lobby
 							} while (numPlayers < 2 || numPlayers > 4);
 
 							while (mpNetwork.getmpPlayerCount() < numPlayers) //waits for all players to connect
@@ -94,12 +90,14 @@ void TexasHoldem::runApp()
 							}
 							std::cout << "Players connected! Starting Game..." << std::endl;
 
+							//Establish the other players
 							NetworkPlayer np1(mpNetwork);
 							NetworkPlayer np2(mpNetwork);
 							NetworkPlayer np3(mpNetwork);
 
-							chooseDealer(p1, np1, np2, np3);
+							chooseDealer(p1, np1, np2, np3); //choose dealer
 							pressAnyKey();
+							playGame(&p1, &np1, &np2, &np3); //play the game
 						}
 						else
 						{
@@ -110,9 +108,9 @@ void TexasHoldem::runApp()
 					{
 						std::string ipString;
 						std::cout << "Enter host's IP address: ";
-						std::cin >> ipString;
+						std::cin >> ipString; //gets host ipaddress
 
-						auto hostIp = sf::IpAddress::fromString(ipString);
+						auto hostIp = sf::IpAddress::fromString(ipString); //gets hostIp from the ipString var
 						if (mpNetwork.joinGame(hostIp.value())) //join game to the user with the ip address they entered
 						{
 							std::cout << "Connected to host." << std::endl;
@@ -313,6 +311,7 @@ void TexasHoldem::determineWinner(Player* players[], Card* Board, int numPlayers
 		
 }
 
+//playGame function used for main game loop. Used for both singleplayer and multiplayer
 void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
 {
 	int playAgain = 0, round = 1, foldCount = 0;
