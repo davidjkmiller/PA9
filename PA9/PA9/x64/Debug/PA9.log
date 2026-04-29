@@ -1,8 +1,0 @@
-﻿  TexasHoldem.cpp
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(122,33): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(7,7): warning C4101: 'scoreArr': unreferenced local variable
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(119,1): warning C4700: uninitialized local variable 'player1' used
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(119,1): warning C4700: uninitialized local variable 'player2' used
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(135,1): warning C4700: uninitialized local variable 'Dealer' used
-C:\Users\otwee\source\repos\PA9\PA9\TexasHoldem.cpp(135,1): warning C4700: uninitialized local variable 'player3' used
-  PA9.vcxproj -> C:\Users\otwee\source\repos\PA9\PA9\x64\Debug\PA9.exe
