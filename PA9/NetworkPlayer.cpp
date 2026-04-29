@@ -5,7 +5,7 @@ NetworkPlayer::NetworkPlayer(NetworkManager& network) : HumanPlayer(), mpNetwork
 	mIsHost = network.getmpIsHost();
 }
 
-float NetworkPlayer::play(float& prizePool, float& currentBet, Card* Board)
+float NetworkPlayer::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) 
 {
 	if (mIsHost) //host receives client's action (host side)
 	{

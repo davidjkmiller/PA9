@@ -60,265 +60,8 @@ void TexasHoldem::runApp()
 					system("cls");
 					chooseDealer(p1, c2, c3, c4);
 					pressAnyKey();
-
-					do //play again loop
-					{
-						round = 1; //set round to 1
-
-						do //round loop
-						{
-							if (round == 1)//STAGE ONE: SET UP--------------------------------------------------------------------
-							{
-								//buy in ($5)
-								prizePool += 20;
-								p1.setBalance(-5);
-								c2.setBalance(-5);
-								c3.setBalance(-5);
-								c4.setBalance(-5);
-
-								  //deck is shuffled
-								deck.shuffleDeck();
-
-								cout << "The deck is shuffled. \n\n";
-
-								//dealer and player pointers are set
-								if (p1.checkIfDealer() == 1)
-								{
-									Dealer = &p1;
-									player1 = &c2;
-									player2 = &c3;
-									player3 = &c4;
-								}
-								else if (c2.checkIfDealer() == 1)
-								{
-									Dealer = &c2;
-									player1 = &c3;
-									player2 = &c4;
-									player3 = &p1;
-								}
-								else if (c3.checkIfDealer() == 1)
-								{
-									Dealer = &c3;
-									player1 = &c4;
-									player2 = &p1;
-									player3 = &c2;
-								}
-								else if (c4.checkIfDealer() == 1)
-								{
-									Dealer = &c4;
-									player1 = &p1;
-									player2 = &c2;
-									player3 = &c3;
-								}
-
-								//increment round
-								++round;
-							}
-							else if(round == 2)//STAGE 2: BLINDS------------------------------------------------------------------------------------------------------
-							{
-								cout << player1->getPlayerID() << " must post the small blind and " << player2->getPlayerID() << " must post the big blind." << endl << endl;
-								cout << player1->getPlayerID() << " bets $" << currentBet / 2 << ". Player 2 bets $" << currentBet << "." << endl;
-
-								prizePool += currentBet * 1.5;
-								player1->setBalance(currentBet / 2);
-								player2->setBalance(currentBet);
-
-								pressAnyKey();
-								system("cls");
-
-								//increment round
-								++round;
-							}
-							else if (round == 3)//STAGE 3: DEAL------------------------------------------------------------------------------------------------------
-							{
-								//cards get dealt
-								deck.deal(player1, player2, player3, Dealer);
-
-								cout << "Cards have been dealt. Players may now take their first action." << endl;
-								pressAnyKey();
-								system("cls");
-
-								//increment round
-								++round;
-							}
-							else if (round == 4)//STAGE 4: PREFLOP------------------------------------------------------------------------------------------------------
-							{
-								//DEV NOTE: player number and play itself goes clockwise, does play start with player1 since they are
-								//left of the dealer or does it start with player 3 since they are "under the gun" ?
-
-								//play
-								player1->play(prizePool, currentBet, Board);
-								player2->play(prizePool, currentBet, Board);
-								player3->play(prizePool, currentBet, Board);
-								Dealer->play(prizePool, currentBet, Board);
-
-								//increment round
-								++round;
-							}
-							else if (round == 5 && foldCount != 3)//STAGE 5: THE FLOP-----------------------------------------------------------------------------------------------------
-							{
-								system("cls");
-
-								//draw the flop
-								for (int i = 0; i < 3; ++i)
-								{
-									Board[i] = deck.drawCard();
-								}
-
-
-								cout << "The flop has been drawn." << endl << endl
-									<< "The board: " << endl
-									<< "            " << Board[0] << endl
-									<< "            " << Board[1] << endl
-									<< "            " << Board[2] << endl;
-
-								pressAnyKey();
-
-								//only allow players who haven't folded to play
-								if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-								if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-								if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-								if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-								
-								//increment round
-								++round;
-							}
-							else if (round == 6 && foldCount != 3)//STAGE 6: THE TURN-----------------------------------------------------------------------------------------------------
-							{
-								system("cls");
-
-								//draw the turn
-								Board[3] = deck.drawCard();
-
-								//print the current board
-								cout << "The turn has been drawn." << endl << endl
-									<< "The board: " << endl
-									<< "            " << Board[0] << endl
-									<< "            " << Board[1] << endl
-									<< "            " << Board[2] << endl
-									<< "            " << Board[3] << endl;
-
-								//only allow players who haven't folded to play
-								if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-								if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-								if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-								if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-
-								//increment round
-								++round;
-							}
-							else if (round == 7 && foldCount != 3)//STAGE 7: THE RIVER----------------------------------------------------------------------------------------------------
-							{
-								system("cls");
-
-								//draw the river
-								Board[4] = deck.drawCard();
-
-								//print the current board
-								cout << "The river has been drawn." << endl << endl
-									<< "The board: " << endl
-									<< "            " << Board[0] << endl
-									<< "            " << Board[1] << endl
-									<< "            " << Board[2] << endl
-									<< "            " << Board[3] << endl
-									<< "            " << Board[4] << endl;
-
-								//only allow players who haven't folded to play
-								if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-								if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-								if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-								if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-
-								//increment round
-								++round;
-							}
-							else if (round == 8 && foldCount != 3)//STAGE 8: THE SHOWDOWN------------------------------------------------------------------------------------------------
-							{
-								system("cls");
-
-								// Create array of active players for winner determination
-								Player* activePlayers[4] = { player1, player2, player3, Dealer };
-
-								// Determine winner and award prize pool
-								determineWinner(activePlayers, Board, 4, prizePool);
-
-								prizePool = 0;
-
-								pressAnyKey();
-
-								++round; //increment round
-							}
-						}while (round < 9 && foldCount != 3); //loop while the showdown has not been reached and while at least two players remain in play
-
-						system("cls");
-
-						cout << "Would you like to play again? y/n \n";
-						
-						do
-						{
-							cin >> YorN;
-
-						} while (YorN != 'y' && YorN != 'n');
-
-						if (YorN == 'y')
-						{
-							playAgain = 1;
-						}
-						else playAgain = 0;
-
-
-						//dealer switches to the left
-						if (p1.checkIfDealer() == 1)
-						{
-							p1.setDealer(0);
-							Dealer = &c2;
-							player1 = &c3;
-							player2 = &c4;
-							player3 = &p1;
-							c2.setDealer(1);
-						}
-						else if (c2.checkIfDealer() == 1)
-						{
-							c2.setDealer(0);
-							Dealer = &c3;
-							player1 = &c4;
-							player2 = &p1;
-							player3 = &c2;
-							c3.setDealer(1);
-						}
-						else if (c3.checkIfDealer() == 1)
-						{
-							c3.setDealer(0);
-							Dealer = &c4;
-							player1 = &p1;
-							player2 = &c2;
-							player3 = &c3;
-							c4.setDealer(1);
-						}
-						else if (c4.checkIfDealer() == 1)
-						{
-							c4.setDealer(0);
-							Dealer = &p1;
-							player1 = &c2;
-							player2 = &c3;
-							player3 = &c4;
-							p1.setDealer(1);
-						}
-								
-						//set all folds to zero
-						Dealer->setFoldStatus(0);
-						player1->setFoldStatus(0);
-						player2->setFoldStatus(0);
-						player3->setFoldStatus(0);
-
-						//reset bet and all other used variables including handScore
-						currentBet = 1;
-
-					} while (playAgain == 1);
-
-
+					playGame(&p1, &c2, &c3, &c4);
 					break;
-
 				case MULTIPLAYER://-----------------------------------------------------------------------------
 				{
 					//enter name
@@ -570,4 +313,267 @@ void TexasHoldem::determineWinner(Player* players[], Card* Board, int numPlayers
 		
 }
 
+void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
+{
+	int playAgain = 0, round = 1, foldCount = 0;
+	char YorN = '\0';
+	float prizePool = 0, currentBet = 5;
+	Deck deck;
+	Card Board[5];
+	Player* Dealer, * player1, * player2, * player3;
 
+	do //play again loop
+	{
+		round = 1; //set round to 1
+
+		do //round loop
+		{
+			if (round == 1)//STAGE ONE: SET UP--------------------------------------------------------------------
+			{
+				//buy in ($5)
+				prizePool += 20;
+				p1->setBalance(-5);
+				p2->setBalance(-5);
+				p3->setBalance(-5);
+				p4->setBalance(-5);
+
+				//deck is shuffled
+				deck.shuffleDeck();
+
+				cout << "The deck is shuffled. \n\n";
+
+				//dealer and player pointers are set
+				if (p1->checkIfDealer() == 1)
+				{
+					Dealer = p1;
+					player1 = p2;
+					player2 = p3;
+					player3 = p4;
+				}
+				else if (p2->checkIfDealer() == 1)
+				{
+					Dealer = p2;
+					player1 = p3;
+					player2 = p4;
+					player3 = p1;
+				}
+				else if (p3->checkIfDealer() == 1)
+				{
+					Dealer = p3;
+					player1 = p4;
+					player2 = p1;
+					player3 = p2;
+				}
+				else if (p4->checkIfDealer() == 1)
+				{
+					Dealer = p4;
+					player1 = p1;
+					player2 = p2;
+					player3 = p3;
+				}
+
+				//increment round
+				++round;
+			}
+			else if (round == 2)//STAGE 2: BLINDS------------------------------------------------------------------------------------------------------
+			{
+				cout << player1->getPlayerID() << " must post the small blind and " << player2->getPlayerID() << " must post the big blind." << endl << endl;
+				cout << player1->getPlayerID() << " bets $" << currentBet / 2 << ". Player 2 bets $" << currentBet << "." << endl;
+
+				prizePool += currentBet * 1.5;
+				player1->setBalance(currentBet / 2);
+				player2->setBalance(currentBet);
+
+				pressAnyKey();
+				system("cls");
+
+				//increment round
+				++round;
+			}
+			else if (round == 3)//STAGE 3: DEAL------------------------------------------------------------------------------------------------------
+			{
+				//cards get dealt
+				deck.deal(player1, player2, player3, Dealer);
+
+				cout << "Cards have been dealt. Players may now take their first action." << endl;
+				pressAnyKey();
+				system("cls");
+
+				//increment round
+				++round;
+			}
+			else if (round == 4)//STAGE 4: PREFLOP------------------------------------------------------------------------------------------------------
+			{
+				//DEV NOTE: player number and play itself goes clockwise, does play start with player1 since they are
+				//left of the dealer or does it start with player 3 since they are "under the gun" ?
+
+				//play
+				player1->play(prizePool, currentBet, Board);
+				player2->play(prizePool, currentBet, Board);
+				player3->play(prizePool, currentBet, Board);
+				Dealer->play(prizePool, currentBet, Board);
+
+				//increment round
+				++round;
+			}
+			else if (round == 5 && foldCount != 3)//STAGE 5: THE FLOP-----------------------------------------------------------------------------------------------------
+			{
+				system("cls");
+
+				//draw the flop
+				for (int i = 0; i < 3; ++i)
+				{
+					Board[i] = deck.drawCard();
+				}
+
+
+				cout << "The flop has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl;
+
+				pressAnyKey();
+
+				//only allow players who haven't folded to play
+				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
+				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
+				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
+				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
+
+				//increment round
+				++round;
+			}
+			else if (round == 6 && foldCount != 3)//STAGE 6: THE TURN-----------------------------------------------------------------------------------------------------
+			{
+				system("cls");
+
+				//draw the turn
+				Board[3] = deck.drawCard();
+
+				//print the current board
+				cout << "The turn has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl
+					<< "            " << Board[3] << endl;
+
+				//only allow players who haven't folded to play
+				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
+				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
+				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
+				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
+
+				//increment round
+				++round;
+			}
+			else if (round == 7 && foldCount != 3)//STAGE 7: THE RIVER----------------------------------------------------------------------------------------------------
+			{
+				system("cls");
+
+				//draw the river
+				Board[4] = deck.drawCard();
+
+				//print the current board
+				cout << "The river has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl
+					<< "            " << Board[3] << endl
+					<< "            " << Board[4] << endl;
+
+				//only allow players who haven't folded to play
+				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
+				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
+				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
+				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
+
+				//increment round
+				++round;
+			}
+			else if (round == 8 && foldCount != 3)//STAGE 8: THE SHOWDOWN------------------------------------------------------------------------------------------------
+			{
+				system("cls");
+
+				// Create array of active players for winner determination
+				Player* activePlayers[4] = { player1, player2, player3, Dealer };
+
+				// Determine winner and award prize pool
+				determineWinner(activePlayers, Board, 4, prizePool);
+
+				prizePool = 0;
+
+				pressAnyKey();
+
+				++round; //increment round
+			}
+		} while (round < 9 && foldCount != 3); //loop while the showdown has not been reached and while at least two players remain in play
+
+		system("cls");
+
+		cout << "Would you like to play again? y/n \n";
+
+		do
+		{
+			cin >> YorN;
+
+		} while (YorN != 'y' && YorN != 'n');
+
+		if (YorN == 'y')
+		{
+			playAgain = 1;
+		}
+		else playAgain = 0;
+
+
+		//dealer switches to the left
+		if (p1->checkIfDealer() == 1)
+		{
+			p1->setDealer(0);
+			Dealer = p2;
+			player1 = p3;
+			player2 = p4;
+			player3 = p1;
+			p2->setDealer(1);
+		}
+		else if (p2->checkIfDealer() == 1)
+		{
+			p2->setDealer(0);
+			Dealer = p3;
+			player1 = p4;
+			player2 = p1;
+			player3 = p2;
+			p3->setDealer(1);
+		}
+		else if (p3->checkIfDealer() == 1)
+		{
+			p3->setDealer(0);
+			Dealer = p4;
+			player1 = p1;
+			player2 = p2;
+			player3 = p3;
+			p4->setDealer(1);
+		}
+		else if (p4->checkIfDealer() == 1)
+		{
+			p4->setDealer(0);
+			Dealer = p1;
+			player1 = p2;
+			player2 = p3;
+			player3 = p4;
+			p1->setDealer(1);
+		}
+
+		//set all folds to zero
+		Dealer->setFoldStatus(0);
+		player1->setFoldStatus(0);
+		player2->setFoldStatus(0);
+		player3->setFoldStatus(0);
+
+		//reset bet and all other used variables including handScore
+		currentBet = 1;
+
+	} while (playAgain == 1);
+}

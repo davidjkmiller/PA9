@@ -7,7 +7,7 @@
 
 //enums for organization
 enum OPTIONS : int {PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT};
-enum PLAY_OPTIONS: int {SINGLEPLAYER, MULTIPLAYER, BACK};
+enum PLAY_OPTIONS: int {SINGLEPLAYER = 1, MULTIPLAYER = 2, BACK = 3};
 
 class TexasHoldem
 {
@@ -24,6 +24,9 @@ public:
 
 	//determines the winner and awards the prize pool
 	void determineWinner(Player* players[], Card* Board, int numPlayers, float prizePool);
+
+	//
+	void playGame(Player* p1, Player* p2, Player* p3, Player* p4);
 
 private:
 	NetworkManager mpNetwork;
