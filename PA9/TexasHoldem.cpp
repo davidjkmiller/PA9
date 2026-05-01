@@ -1,18 +1,27 @@
 #include "TexasHoldem.hpp"
+#include <optional>
+#include <algorithm>
+#include <cctype>
+#include <iostream>
 
-TexasHoldem::TexasHoldem() : window(sf::VideoMode({ 1920, 1080 }), "Texas Hold'em"), backgroundSprite(titleTexture),
-	winnerTextDisplay(mainFont, "", 35), actionLogText(mainFont, "", 24),
-	potText(mainFont, "", 20), betText(mainFont, "", 20), balanceText(mainFont, "", 20) {
+using std::cout;
+using std::cin;
+using std::endl;
 
-	//Computer Players
-	CPU c2, c3, c4;
+void pressAnyKey();
+
+TexasHoldem::TexasHoldem() : window(sf::VideoMode({ Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT }), "Texas Hold'em"), backgroundSprite(titleTexture),
+winnerTextDisplay(mainFont, "", 35), actionLogText(mainFont, "", 24),
+potText(mainFont, "", 20), betText(mainFont, "", 20), balanceText(mainFont, "", 20) {
+
+	window.setFramerateLimit(60);
 
 	currentState = TITLE_SCREEN;
 	currentPhase = DEALING;
 	currentStage = WAITING_TO_START;
 
 	// Invisible box to fake a fade transition
-	fadeShape.setSize({ static_cast<float>(1280), 720.f });
+	fadeShape.setSize({ Constants::SCREEN_WIDTH_FLOAT, (float)Constants::SCREEN_HEIGHT });
 	fadeShape.setFillColor(sf::Color(0, 0, 0, 0));
 	fadeAlpha = 0.f;
 	fadingToBlack = true;
@@ -26,8 +35,10 @@ TexasHoldem::TexasHoldem() : window(sf::VideoMode({ 1920, 1080 }), "Texas Hold'e
 	c3.setPlayerID("CPU 2");
 	c4.setPlayerID("CPU 3");
 
-	//pointers to players that get assigned based on who is dealer
-	Player* Dealer, *player1, *player2, *player3;
+	Dealer = nullptr;
+	player1 = nullptr;
+	player2 = nullptr;
+	player3 = nullptr;
 
 	for (int i = 0; i < 4; i++) {
 		turnOrder[i] = nullptr;
@@ -37,22 +48,15 @@ TexasHoldem::TexasHoldem() : window(sf::VideoMode({ 1920, 1080 }), "Texas Hold'e
 }
 
 TexasHoldem::~TexasHoldem() {
-	delete playButton;
-	delete rulesButton;
-	delete tipButton;
-	delete creditsButton;
-	delete exitButton;
-	delete dealButton;
-	delete callButton;
-	delete raiseButton;
-	delete foldButton;
+	for (UIElement* element : uiElements)
+	{
+		delete element;
+	}
+	uiElements.clear();
 }
 
 void TexasHoldem::loadAssets()
 {
-	// Had AI add in the debug/event statements because I was lazy and wanted to see if it would do it with minimal input
-	// Prompt: "Add in debug statements to check if textures and assets are loading in correctly"
-
 	if (!titleTexture.loadFromFile("Assets/menus/splashScreen.png")) std::cout << "Failed to load title screen!\n";
 	if (!menuTexture.loadFromFile("Assets/menus/tableBG.png")) std::cout << "Failed to load menu screen!\n";
 	if (!gameBgTexture.loadFromFile("Assets/menus/tableBG.png")) std::cout << "Failed to load game screen!\n";
@@ -69,14 +73,12 @@ void TexasHoldem::loadAssets()
 		std::cout << "WARNING: Font failed to load! Buttons will not display text.\n";
 	}
 
-	// Update font in case it wasn't loaded already
 	winnerTextDisplay.setFont(mainFont);
 	actionLogText.setFont(mainFont);
 	potText.setFont(mainFont);
 	betText.setFont(mainFont);
 	balanceText.setFont(mainFont);
 
-	// Setup Text Colors and Positions
 	winnerTextDisplay.setFillColor(sf::Color::Yellow);
 	winnerTextDisplay.setPosition({ 400.f, 350.f });
 
@@ -90,14 +92,12 @@ void TexasHoldem::loadAssets()
 	balanceText.setFillColor(sf::Color::White);
 	balanceText.setPosition({ 20.f, 80.f });
 
-	// Set up main menu image buttons
 	playButton = new ImageButton(playButtonTexture, { 640.f, 80.f });
 	rulesButton = new ImageButton(rulebuttonTexture, { 640.f, 200.f });
 	tipButton = new ImageButton(tipDevsButtonTexture, { 640.f, 350.f });
 	creditsButton = new ImageButton(creditsButtonTexture, { 640.f, 500.f });
 	exitButton = new ImageButton(exitButtonTexture, { 640.f, 650.f });
 
-	// Set up gameplay buttons
 	dealButton = new Button(mainFont, "DEAL NEXT", { 150.f, 50.f }, 75, sf::Color::Transparent, sf::Color::Black);
 	dealButton->setPosition({ 1050.f, 600.f });
 
@@ -109,6 +109,16 @@ void TexasHoldem::loadAssets()
 
 	foldButton = new Button(mainFont, "FOLD", { 100.f, 40.f }, 75, sf::Color(150, 50, 50), sf::Color::White);
 	foldButton->setPosition({ 850.f, 600.f });
+
+	uiElements.push_back(playButton);
+	uiElements.push_back(rulesButton);
+	uiElements.push_back(tipButton);
+	uiElements.push_back(creditsButton);
+	uiElements.push_back(exitButton);
+	uiElements.push_back(dealButton);
+	uiElements.push_back(callButton);
+	uiElements.push_back(raiseButton);
+	uiElements.push_back(foldButton);
 }
 
 std::string TexasHoldem::getFilenameForCard(Card card)
@@ -150,87 +160,41 @@ void TexasHoldem::updateUI()
 {
 	potText.setString("POT: $" + std::to_string((int)prizePool));
 	betText.setString("CURRENT BET: $" + std::to_string((int)currentBet));
-	balanceText.setString("YOUR BALANCE: $" + std::to_string((int)players[0]->getBalance()));
+	balanceText.setString("YOUR BALANCE: $" + std::to_string((int)p1.getBalance()));
 }
 
-					cin >> choice;
+void TexasHoldem::startNewRound()
+{
+	deck.initDeck();
+	deck.shuffleDeck();
+	rotateDealer();
+	deck.deal(player1, player2, player3, Dealer);
 
-				} while (choice < 1 || choice > 3);
+	playerHandSprites.clear();
+	boardSprites.clear();
+	actionLogText.setString("ROUND " + std::to_string(roundNumber) + "! " + player1->getPlayerID() + " POSTS SMALL BLIND.");
 
-				switch (choice)
-				{
-				case SINGLEPLAYER://---------------------------------------------------------------------------
-
-					//One human player, three CPU players
-					//STAGE 0: NON CYCLICAL SETUP
-					//random dealer selection only applicable for the very first round
-					system("cls");
-					chooseDealer(p1, c2, c3, c4);
-					pressAnyKey();
-					playGame(&p1, &c2, &c3, &c4); //runs playGame function for game logic
-					break;
-				case MULTIPLAYER://-----------------------------------------------------------------------------
-				{
-					//enter name
-					//?
-					int multiChoice = 0;
-					system("cls");
-
-					std::cout << "1. Host Game" << std::endl;
-					std::cout << "2. Join Game" << std::endl;
-					std::cin >> multiChoice; //get user's choice if they are hosting or joining
-
-					if (multiChoice == 1) //host side
-					{
-						if (mpNetwork.startHost()) //start hosting on local device
-						{
-							std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
-
-	actionLogText.setString("ROUND " + std::to_string(roundNumber) + "! " + player1->getPlayerID() + " POSTS SMALL BLIND, " + player2->getPlayerID() + " POSTS BIG BLIND.");
-
-	// Render player's cards
 	for (int i = 0; i < 2; i++) {
 		sf::Sprite sprite(getCardTexture(p1.getHand()[i]));
-		sprite.setScale({ 2.f, 2.f });
-		sprite.setPosition({ 500.f + (i * 150.f), 500.f });
+		sprite.setScale({ 1.5f, 1.5f });
+		sprite.setPosition({ 500.f + (i * 120.f), 500.f });
 		playerHandSprites.push_back(sprite);
 	}
 
-							//Establish the other players
-							NetworkPlayer np1(mpNetwork);
-							NetworkPlayer np2(mpNetwork);
-							NetworkPlayer np3(mpNetwork);
+	currentStage = PRE_FLOP;
+	currentPhase = BETTING;
+	playersActed = 0;
+	activePlayerIndex = 0;
 
-							chooseDealer(p1, np1, np2, np3); //choose dealer
-							pressAnyKey();
-							playGame(&p1, &np1, &np2, &np3); //play the game
-						}
-						else
-						{
-							std::cout << "Failed to host game." << std::endl;
-						}
-					}
-					else if (multiChoice == 2) //if user is joining a game
-					{
-						std::string ipString;
-						std::cout << "Enter host's IP address: ";
-						std::cin >> ipString; //gets host ipaddress
+	updateUI();
+}
 
-						auto hostIp = sf::IpAddress::fromString(ipString); //gets hostIp from the ipString var
-						if (mpNetwork.joinGame(hostIp.value())) //join game to the user with the ip address they entered
-						{
-							std::cout << "Connected to host." << std::endl;
-						}
-						else
-						{
-							std::cout << "Failed to connect to host." << std::endl;
-						}
-					}
-					pressAnyKey();
-					break;
-				}
-
-				case BACK:
+void TexasHoldem::advanceTurn()
+{
+	int activeCount = 0;
+	for (int i = 0; i < 4; i++) {
+		if (turnOrder[i] && !turnOrder[i]->getFoldStatus()) activeCount++;
+	}
 
 	if (activeCount <= 1) {
 		currentPhase = SHOWDOWN;
@@ -244,11 +208,9 @@ void TexasHoldem::updateUI()
 		actionLogText.setString("BETTING COMPLETE. CLICK 'DEAL NEXT' TO CONTINUE.");
 	}
 	else {
-		// Move to the next player
 		activePlayerIndex = (activePlayerIndex + 1) % 4;
 		cpuThinkTimer.restart();
 
-		// Skip folded players automatically
 		while (turnOrder[activePlayerIndex]->getFoldStatus() && playersActed < 4) {
 			playersActed++;
 			activePlayerIndex = (activePlayerIndex + 1) % 4;
@@ -300,13 +262,11 @@ void TexasHoldem::advanceRoundStage()
 		return;
 	}
 
-	// Reset for the new betting round
 	currentPhase = BETTING;
 	playersActed = 0;
 	activePlayerIndex = 0;
 	actionLogText.setString("NEW CARDS DEALT! WAITING FOR BETS...");
 
-	// Ensure we don't start the betting round on a folded player
 	while (turnOrder[activePlayerIndex]->getFoldStatus() && playersActed < 4) {
 		playersActed++;
 		activePlayerIndex = (activePlayerIndex + 1) % 4;
@@ -315,438 +275,15 @@ void TexasHoldem::advanceRoundStage()
 	updateUI();
 }
 
-void TexasHoldem::runApp()
+void TexasHoldem::processEvents()
 {
-	while (window.isOpen() && currentState != EXITING)
+	while (const std::optional<sf::Event> event = window.pollEvent())
 	{
-		processEvents();
-		update();
-		render();
-	}
-}
-
-/*void TexasHoldem::displayMenu()
-{
-	std::system("cls");
-
-	cout << "TEXAS HOLD'EM" << endl << endl;
-
-	cout << "1. PLAY" << endl;
-	cout << "2. RULES" << endl;
-	cout << "3. TIP DEVS" << endl;
-	cout << "4. CREDITS" << endl;
-	cout << "5. EXIT" << endl;
-}
-
-// Dealer shifts left every round
-void TexasHoldem::rotateDealer()
-{
-	srand((unsigned)time(NULL)); /* seed random-number generator */
-
-	int dealer = 0;
-
-	dealer = rand() % 4;
-	dealer++;
-
-	if (dealer == 1)
-	{
-		p1.setDealer(1);
-		cout << "Player 1 is the dealer!" << endl << endl;
-	}
-	else if (dealer == 2)
-	{
-		p2.setDealer(1);
-		cout << "Player 2 is the dealer!" << endl << endl;
-	}
-	else if (dealer == 3)
-	{
-		p3.setDealer(1);
-		cout << "Player 3 is the dealer!" << endl << endl;
-	}
-	else if (dealer == 4)
-	{
-		p4.setDealer(1);
-		cout << "Player 4 is the dealer!" << endl << endl;
-	}
-
-	turnOrder[0] = player1;
-	turnOrder[1] = player2;
-	turnOrder[2] = player3;
-	turnOrder[3] = Dealer; 
-}
-
-std::string TexasHoldem::getHandName(int score)
-{
-	if (score == 9) return "ROYAL FLUSH!";
-	if (score == 8) return "STRAIGHT FLUSH!";
-	if (score == 7) return "FOUR OF A KIND!";
-	if (score == 6) return "FULL HOUSE!";
-	if (score == 5) return "FLUSH!";
-	if (score == 4) return "STRAIGHT!";
-	if (score == 3) return "THREE OF A KIND!";
-	if (score == 2) return "TWO PAIR!";
-	if (score == 1) return "PAIR!";
-	return "HIGH CARD...";
-}
-
-//AI CREATED FUNCTION USING THE PROMPT:
-/*"In TexasHoldem,cpp, I am trying to develop an
-algorithm which compares the scores of each player and returns a 
-message saying who won. What is an efficient eay of accomplishing this?"*/
-//However I've edited the code to serve my purposes
-void TexasHoldem::determineWinner(Player* players[], Card* Board, int numPlayers, float prizePool)
-{
-	Player* winner;
-
-	// Struct to store player data and score
-	struct PlayerScore
-	{
-		Player* player;
-		int score;
-	};
-
-	// Array to hold all non-folded players and their scores
-	PlayerScore scores[4];
-	int nonFoldedCount = 0;
-
-	// Collect scores from all non-folded players
-	for (int i = 0; i < numPlayers; ++i)
-	{
-		if (!players[i]->getFoldStatus())
+		if (event->is<sf::Event::Closed>())
 		{
-			scores[nonFoldedCount].player = players[i];
-			scores[nonFoldedCount].score = players[i]->score(Board);
-			++nonFoldedCount;
+			currentState = EXITING;
 		}
-	}
-
-	// If only one player hasn't folded, they win by default
-	if (nonFoldedCount == 1)
-	{
-		cout << "\nAll other players folded!" << endl;
-		cout << scores[0].player->getPlayerID() << " wins the pot of $" << prizePool << "!" << endl;
-		scores[0].player->setBalance(prizePool);
-		return scores[0].player->getPlayerID() + " WINS BY DEFAULT!";
-	}
-
-	// Find the maximum score
-	int maxScore = scores[0].score;
-	for (int i = 1; i < nonFoldedCount; ++i)
-	{
-		if (scores[i].score > maxScore)
-		{
-			maxScore = scores[i].score;
-		}
-	}
-
-	// Count how many players have the max score (for tie handling) and set winner
-	int winnerCount = 0;
-
-	//records who has the greatest handScore in case there is a tie (to ensure the absolute winner)
-	int maxTieScore = 0;
-
-	for (int i = 0; i < nonFoldedCount; ++i)
-	{
-		if (scores[i].score == maxScore)
-		{
-			++winnerCount;
-			if (scores[i].player->getHandScore() > maxTieScore)
-			{
-				maxTieScore = scores[i].player->getHandScore();
-				winner = scores[i].player;
-			}
-		}
-	}
-
-	// Output results and award prize
-	cout << "\n===== SHOWDOWN =====" << endl;
-	for (int i = 0; i < nonFoldedCount; ++i)
-	{
-		cout << scores[i].player->getPlayerID() << " had a ";
-		if (scores[i].score == 9) cout << "Royal Flush!" << endl;
-		else if (scores[i].score == 8) cout << "Straight Flush!" << endl;
-		else if (scores[i].score == 7) cout << "Four of a Kind!" << endl;
-		else if (scores[i].score == 6) cout << "Full House!" << endl;
-		else if (scores[i].score == 5) cout << "Flush!" << endl;
-		else if (scores[i].score == 4) cout << "Stright!" << endl;
-		else if (scores[i].score == 3) cout << "Three of a Kind!" << endl;
-		else if (scores[i].score == 2) cout << "Two Pair!" << endl;
-		else if (scores[i].score == 1) cout << "Pair!" << endl;
-		else if (scores[i].score == 0) cout << "... nothing... yikes friend." << endl;
-
-		//should print sprites instead
-		scores[i].player->viewHand();
-		cout << endl;
-
-	}
-	cout << "===================" << endl;
-
-	
-	cout << "\n\n" << winner->getPlayerID() << " wins!" << endl;
-	cout << "Prize pool: $" << prizePool << endl;
-	winner->setBalance(prizePool);
-	prizePool = 0;
-	updateUI();
-
-	// Return the specific string formats written by team member
-	return winner->getPlayerID() + " WINS WITH A \n" + getHandName(winner->score(boardCards));
-}
-
-//playGame function used for main game loop. Used for both singleplayer and multiplayer
-void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
-{
-	int playAgain = 0, round = 1, foldCount = 0;
-	char YorN = '\0';
-	float prizePool = 0, currentBet = 5;
-	Deck deck;
-	Card Board[5];
-	Player* Dealer, * player1, * player2, * player3;
-
-	do //play again loop
-	{
-		round = 1; //set round to 1
-
-		do //round loop
-		{
-			if (round == 1)//STAGE ONE: SET UP--------------------------------------------------------------------
-			{
-				//buy in ($5)
-				prizePool += 20;
-				p1->setBalance(-5);
-				p2->setBalance(-5);
-				p3->setBalance(-5);
-				p4->setBalance(-5);
-
-				//deck is shuffled
-				deck.shuffleDeck();
-
-				cout << "The deck is shuffled. \n\n";
-
-				//dealer and player pointers are set
-				if (p1->checkIfDealer() == 1)
-				{
-					Dealer = p1;
-					player1 = p2;
-					player2 = p3;
-					player3 = p4;
-				}
-				else if (p2->checkIfDealer() == 1)
-				{
-					Dealer = p2;
-					player1 = p3;
-					player2 = p4;
-					player3 = p1;
-				}
-				else if (p3->checkIfDealer() == 1)
-				{
-					Dealer = p3;
-					player1 = p4;
-					player2 = p1;
-					player3 = p2;
-				}
-				else if (p4->checkIfDealer() == 1)
-				{
-					Dealer = p4;
-					player1 = p1;
-					player2 = p2;
-					player3 = p3;
-				}
-
-				//increment round
-				++round;
-			}
-			else if (round == 2)//STAGE 2: BLINDS------------------------------------------------------------------------------------------------------
-			{
-				cout << player1->getPlayerID() << " must post the small blind and " << player2->getPlayerID() << " must post the big blind." << endl << endl;
-				cout << player1->getPlayerID() << " bets $" << currentBet / 2 << ". Player 2 bets $" << currentBet << "." << endl;
-
-				prizePool += currentBet * 1.5;
-				player1->setBalance(currentBet / 2);
-				player2->setBalance(currentBet);
-
-				pressAnyKey();
-				system("cls");
-
-				//increment round
-				++round;
-			}
-			else if (round == 3)//STAGE 3: DEAL------------------------------------------------------------------------------------------------------
-			{
-				//cards get dealt
-				deck.deal(player1, player2, player3, Dealer);
-
-				cout << "Cards have been dealt. Players may now take their first action." << endl;
-				pressAnyKey();
-				system("cls");
-
-				//increment round
-				++round;
-			}
-			else if (round == 4)//STAGE 4: PREFLOP------------------------------------------------------------------------------------------------------
-			{
-				//DEV NOTE: player number and play itself goes clockwise, does play start with player1 since they are
-				//left of the dealer or does it start with player 3 since they are "under the gun" ?
-
-				//play
-				player1->play(prizePool, currentBet, Board);
-				player2->play(prizePool, currentBet, Board);
-				player3->play(prizePool, currentBet, Board);
-				Dealer->play(prizePool, currentBet, Board);
-
-				//increment round
-				++round;
-			}
-			else if (round == 5 && foldCount != 3)//STAGE 5: THE FLOP-----------------------------------------------------------------------------------------------------
-			{
-				system("cls");
-
-				//draw the flop
-				for (int i = 0; i < 3; ++i)
-				{
-					Board[i] = deck.drawCard();
-				}
-
-
-				cout << "The flop has been drawn." << endl << endl
-					<< "The board: " << endl
-					<< "            " << Board[0] << endl
-					<< "            " << Board[1] << endl
-					<< "            " << Board[2] << endl;
-
-				pressAnyKey();
-
-				//only allow players who haven't folded to play
-				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-
-				//increment round
-				++round;
-			}
-			else if (round == 6 && foldCount != 3)//STAGE 6: THE TURN-----------------------------------------------------------------------------------------------------
-			{
-				system("cls");
-
-				//draw the turn
-				Board[3] = deck.drawCard();
-
-				//print the current board
-				cout << "The turn has been drawn." << endl << endl
-					<< "The board: " << endl
-					<< "            " << Board[0] << endl
-					<< "            " << Board[1] << endl
-					<< "            " << Board[2] << endl
-					<< "            " << Board[3] << endl;
-
-				//only allow players who haven't folded to play
-				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-
-				//increment round
-				++round;
-			}
-			else if (round == 7 && foldCount != 3)//STAGE 7: THE RIVER----------------------------------------------------------------------------------------------------
-			{
-				system("cls");
-
-				//draw the river
-				Board[4] = deck.drawCard();
-
-				//print the current board
-				cout << "The river has been drawn." << endl << endl
-					<< "The board: " << endl
-					<< "            " << Board[0] << endl
-					<< "            " << Board[1] << endl
-					<< "            " << Board[2] << endl
-					<< "            " << Board[3] << endl
-					<< "            " << Board[4] << endl;
-
-				//only allow players who haven't folded to play
-				if (!player1->getFoldStatus()) player1->play(prizePool, currentBet, Board);
-				if (!player2->getFoldStatus()) player2->play(prizePool, currentBet, Board);
-				if (!player3->getFoldStatus()) player3->play(prizePool, currentBet, Board);
-				if (!Dealer->getFoldStatus()) Dealer->play(prizePool, currentBet, Board);
-
-				//increment round
-				++round;
-			}
-			else if (round == 8 && foldCount != 3)//STAGE 8: THE SHOWDOWN------------------------------------------------------------------------------------------------
-			{
-				system("cls");
-
-				// Create array of active players for winner determination
-				Player* activePlayers[4] = { player1, player2, player3, Dealer };
-
-				// Determine winner and award prize pool
-				determineWinner(activePlayers, Board, 4, prizePool);
-
-				prizePool = 0;
-
-				pressAnyKey();
-
-				++round; //increment round
-			}
-		} while (round < 9 && foldCount != 3); //loop while the showdown has not been reached and while at least two players remain in play
-
-		system("cls");
-
-		cout << "Would you like to play again? y/n \n";
-
-		do
-		{
-			cin >> YorN;
-
-		} while (YorN != 'y' && YorN != 'n');
-
-		if (YorN == 'y')
-		{
-			playAgain = 1;
-		}
-		else playAgain = 0;
-
-
-		//dealer switches to the left
-		if (p1->checkIfDealer() == 1)
-		{
-			p1->setDealer(0);
-			Dealer = p2;
-			player1 = p3;
-			player2 = p4;
-			player3 = p1;
-			p2->setDealer(1);
-		}
-		else if (p2->checkIfDealer() == 1)
-		{
-			p2->setDealer(0);
-			Dealer = p3;
-			player1 = p4;
-			player2 = p1;
-			player3 = p2;
-			p3->setDealer(1);
-		}
-		else if (p3->checkIfDealer() == 1)
-		{
-			p3->setDealer(0);
-			Dealer = p4;
-			player1 = p1;
-			player2 = p2;
-			player3 = p3;
-			p4->setDealer(1);
-		}
-		else if (p4->checkIfDealer() == 1)
-		{
-			p4->setDealer(0);
-			Dealer = p1;
-			player1 = p2;
-			player2 = p3;
-			player3 = p4;
-			p1->setDealer(1);
-		}
-
-		if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>())
+		else if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>())
 		{
 			if (mouseButton->button == sf::Mouse::Button::Left)
 			{
@@ -762,10 +299,8 @@ void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
 					{
 						currentState = PLAYING;
 						backgroundSprite.setTexture(gameBgTexture, true);
-
-						// Resize the background texture cause it's smaller
 						sf::Vector2u textureSize = gameBgTexture.getSize();
-						backgroundSprite.setScale({ 1280.f / textureSize.x, 720.f / textureSize.y });
+						backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT / (float)textureSize.y });
 					}
 					else if (rulesButton->isMouseOver(window)) std::cout << "Test -> Rules clicked\n";
 					else if (tipButton->isMouseOver(window)) std::cout << "Test -> Tip devs clicked\n";
@@ -774,7 +309,6 @@ void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
 				}
 				else if (currentState == PLAYING)
 				{
-					// Wait for player input if dealing cards
 					if ((currentPhase == DEALING || currentPhase == SHOWDOWN) && dealButton->isMouseOver(window))
 					{
 						if (currentStage == WAITING_TO_START || currentPhase == SHOWDOWN)
@@ -787,7 +321,6 @@ void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
 						}
 					}
 
-					// Wait for player choices before continuing
 					if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 && !p1.getFoldStatus())
 					{
 						if (callButton->isMouseOver(window)) {
@@ -812,6 +345,507 @@ void TexasHoldem::playGame(Player* p1, Player* p2, Player* p3, Player* p4)
 	}
 }
 
+void TexasHoldem::runApp()
+{
+	while (window.isOpen() && currentState != EXITING)
+	{
+		processEvents();
+		update();
+		render();
+	}
+}
+
+void TexasHoldem::displayMenu()
+{
+	int choice = 0;
+	std::system("cls");
+
+	cout << "TEXAS HOLD'EM (CLI MODE)" << endl << endl;
+	cout << "1. PLAY SINGLEPLAYER" << endl;
+	cout << "2. PLAY MULTIPLAYER" << endl;
+	cout << "3. EXIT" << endl;
+
+	do {
+		cin >> choice;
+	} while (choice < 1 || choice > 3);
+
+	switch (choice)
+	{
+	case SINGLEPLAYER:
+		system("cls");
+		chooseDealer(p1, c2, c3, c4);
+		playGame(&p1, &c2, &c3, &c4);
+		break;
+	case MULTIPLAYER:
+	{
+		int multiChoice = 0;
+		system("cls");
+		std::cout << "1. Host Game\n2. Join Game\n";
+		std::cin >> multiChoice;
+
+		if (multiChoice == 1)
+		{
+			if (mpNetwork.startHost())
+			{
+				std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
+				int numPlayers = 0;
+				do {
+					std::cout << "How many players? (2-4): ";
+					std::cin >> numPlayers;
+				} while (numPlayers < 2 || numPlayers > 4);
+
+				while (mpNetwork.getmpPlayerCount() < numPlayers) {
+					mpNetwork.update();
+					cout << "Waiting for players... " << mpNetwork.getmpPlayerCount() << "/" << numPlayers << "\r";
+				}
+				std::cout << "\nPlayers connected! Starting Game..." << std::endl;
+
+				NetworkPlayer np1(mpNetwork);
+				NetworkPlayer np2(mpNetwork);
+				NetworkPlayer np3(mpNetwork);
+
+				chooseDealer(p1, np1, np2, np3);
+				playGame(&p1, &np1, &np2, &np3);
+			}
+			else {
+				std::cout << "Failed to host game." << std::endl;
+			}
+		}
+		else if (multiChoice == 2)
+		{
+			std::string ipString;
+			std::cout << "Enter host's IP address: ";
+			std::cin >> ipString;
+
+			auto hostIp = sf::IpAddress::resolve(ipString);
+			if (hostIp && mpNetwork.joinGame(hostIp.value())) {
+				std::cout << "Connected to host." << std::endl;
+			}
+			else {
+				std::cout << "Failed to connect to host." << std::endl;
+			}
+		}
+		break;
+	}
+	case BACK:
+		break;
+	}
+}
+
+void TexasHoldem::rotateDealer()
+{
+	srand((unsigned)time(NULL));
+
+	int dealerNum = rand() % 4 + 1;
+
+	// Reset dealer status
+	p1.setDealer(0);
+	c2.setDealer(0);
+	c3.setDealer(0);
+	c4.setDealer(0);
+
+	if (dealerNum == 1) {
+		p1.setDealer(1);
+		Dealer = &p1;
+		player1 = &c2;
+		player2 = &c3;
+		player3 = &c4;
+	}
+	else if (dealerNum == 2) {
+		c2.setDealer(1);
+		Dealer = &c2;
+		player1 = &c3;
+		player2 = &c4;
+		player3 = &p1;
+	}
+	else if (dealerNum == 3) {
+		c3.setDealer(1);
+		Dealer = &c3;
+		player1 = &c4;
+		player2 = &p1;
+		player3 = &c2;
+	}
+	else if (dealerNum == 4) {
+		c4.setDealer(1);
+		Dealer = &c4;
+		player1 = &p1;
+		player2 = &c2;
+		player3 = &c3;
+	}
+
+	turnOrder[0] = player1; 
+	turnOrder[1] = player2; 
+	turnOrder[2] = player3;
+	turnOrder[3] = Dealer; 
+}
+
+std::string TexasHoldem::getHandName(int score)
+{
+	if (score == 9) return "ROYAL FLUSH!";
+	if (score == 8) return "STRAIGHT FLUSH!";
+	if (score == 7) return "FOUR OF A KIND!";
+	if (score == 6) return "FULL HOUSE!";
+	if (score == 5) return "FLUSH!";
+	if (score == 4) return "STRAIGHT!";
+	if (score == 3) return "THREE OF A KIND!";
+	if (score == 2) return "TWO PAIR!";
+	if (score == 1) return "PAIR!";
+	return "HIGH CARD...";
+}
+
+std::string TexasHoldem::determineWinner()
+{
+	Player* winner = nullptr;
+
+	struct PlayerScore {
+		Player* player;
+		int score;
+	};
+
+	PlayerScore scores[4];
+	int nonFoldedCount = 0;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (turnOrder[i] && !turnOrder[i]->getFoldStatus())
+		{
+			scores[nonFoldedCount].player = turnOrder[i];
+			scores[nonFoldedCount].score = turnOrder[i]->score(boardCards);
+			++nonFoldedCount;
+		}
+	}
+
+	if (nonFoldedCount == 1)
+	{
+		scores[0].player->setBalance(prizePool);
+		prizePool = 0;
+		updateUI();
+		return scores[0].player->getPlayerID() + " WINS BY DEFAULT!";
+	}
+
+	int maxScore = scores[0].score;
+	for (int i = 1; i < nonFoldedCount; ++i)
+	{
+		if (scores[i].score > maxScore)
+		{
+			maxScore = scores[i].score;
+		}
+	}
+
+	int maxTieScore = 0;
+	for (int i = 0; i < nonFoldedCount; ++i)
+	{
+		if (scores[i].score == maxScore)
+		{
+			if (scores[i].player->getHandScore() >= maxTieScore)
+			{
+				maxTieScore = scores[i].player->getHandScore();
+				winner = scores[i].player;
+			}
+		}
+	}
+
+	if (winner)
+	{
+		winner->setBalance(prizePool);
+		prizePool = 0;
+		updateUI();
+		return winner->getPlayerID() + " WINS WITH A \n" + getHandName(winner->score(boardCards));
+	}
+
+	return "TIE OR ERROR!";
+}
+
+void TexasHoldem::determineWinner(Player* activePlayers[], Card* Board, int numPlayers, float prizePoolArg)
+{
+	Player* winner = nullptr;
+
+	struct PlayerScore {
+		Player* player;
+		int score;
+	};
+
+	PlayerScore scores[4];
+	int nonFoldedCount = 0;
+
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (!activePlayers[i]->getFoldStatus())
+		{
+			scores[nonFoldedCount].player = activePlayers[i];
+			scores[nonFoldedCount].score = activePlayers[i]->score(Board);
+			++nonFoldedCount;
+		}
+	}
+
+	if (nonFoldedCount == 1)
+	{
+		cout << "\nAll other players folded!" << endl;
+		cout << scores[0].player->getPlayerID() << " wins the pot of $" << prizePoolArg << "!" << endl;
+		scores[0].player->setBalance(prizePoolArg);
+		return;
+	}
+
+	int maxScore = scores[0].score;
+	for (int i = 1; i < nonFoldedCount; ++i)
+	{
+		if (scores[i].score > maxScore)
+		{
+			maxScore = scores[i].score;
+		}
+	}
+
+	int maxTieScore = 0;
+
+	for (int i = 0; i < nonFoldedCount; ++i)
+	{
+		if (scores[i].score == maxScore)
+		{
+			if (scores[i].player->getHandScore() > maxTieScore)
+			{
+				maxTieScore = scores[i].player->getHandScore();
+				winner = scores[i].player;
+			}
+		}
+	}
+
+	cout << "\n===== SHOWDOWN =====" << endl;
+	for (int i = 0; i < nonFoldedCount; ++i)
+	{
+		cout << scores[i].player->getPlayerID() << " had a ";
+		cout << getHandName(scores[i].score) << endl;
+		scores[i].player->viewHand();
+		cout << endl;
+	}
+	cout << "===================" << endl;
+
+	cout << "\n\n" << winner->getPlayerID() << " wins!" << endl;
+	cout << "Prize pool: $" << prizePoolArg << endl;
+	winner->setBalance(prizePoolArg);
+}
+
+void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* p4Ptr)
+{
+	int playAgain = 0, round = 1, foldCount = 0;
+	char YorN = '\0';
+	float currentPrizePool = 0, currentBetAmount = 5;
+	Deck localDeck;
+	Card Board[5];
+	Player* localDealer = nullptr, * localPlayer1 = nullptr, * localPlayer2 = nullptr, * localPlayer3 = nullptr;
+
+	do
+	{
+		round = 1;
+
+		do
+		{
+			if (round == 1)
+			{
+				currentPrizePool += 20;
+				p1Ptr->setBalance(-5);
+				p2Ptr->setBalance(-5);
+				p3Ptr->setBalance(-5);
+				p4Ptr->setBalance(-5);
+
+				localDeck.shuffleDeck();
+
+				cout << "The deck is shuffled. \n\n";
+
+				if (p1Ptr->checkIfDealer() == 1)
+				{
+					localDealer = p1Ptr;
+					localPlayer1 = p2Ptr;
+					localPlayer2 = p3Ptr;
+					localPlayer3 = p4Ptr;
+				}
+				else if (p2Ptr->checkIfDealer() == 1)
+				{
+					localDealer = p2Ptr;
+					localPlayer1 = p3Ptr;
+					localPlayer2 = p4Ptr;
+					localPlayer3 = p1Ptr;
+				}
+				else if (p3Ptr->checkIfDealer() == 1)
+				{
+					localDealer = p3Ptr;
+					localPlayer1 = p4Ptr;
+					localPlayer2 = p1Ptr;
+					localPlayer3 = p2Ptr;
+				}
+				else if (p4Ptr->checkIfDealer() == 1)
+				{
+					localDealer = p4Ptr;
+					localPlayer1 = p1Ptr;
+					localPlayer2 = p2Ptr;
+					localPlayer3 = p3Ptr;
+				}
+				++round;
+			}
+			else if (round == 2)
+			{
+				cout << localPlayer1->getPlayerID() << " must post the small blind and " << localPlayer2->getPlayerID() << " must post the big blind." << endl << endl;
+				cout << localPlayer1->getPlayerID() << " bets $" << currentBetAmount / 2 << ". Player 2 bets $" << currentBetAmount << "." << endl;
+
+				currentPrizePool += currentBetAmount * 1.5f;
+				localPlayer1->setBalance(currentBetAmount / 2.0f);
+				localPlayer2->setBalance(currentBetAmount);
+
+				pressAnyKey();
+				system("cls");
+				++round;
+			}
+			else if (round == 3)
+			{
+				localDeck.deal(localPlayer1, localPlayer2, localPlayer3, localDealer);
+				cout << "Cards have been dealt. Players may now take their first action." << endl;
+				pressAnyKey();
+				system("cls");
+				++round;
+			}
+			else if (round == 4)
+			{
+				localPlayer1->play(currentPrizePool, currentBetAmount, Board);
+				localPlayer2->play(currentPrizePool, currentBetAmount, Board);
+				localPlayer3->play(currentPrizePool, currentBetAmount, Board);
+				localDealer->play(currentPrizePool, currentBetAmount, Board);
+				++round;
+			}
+			else if (round == 5 && foldCount != 3)
+			{
+				system("cls");
+				for (int i = 0; i < 3; ++i)
+				{
+					Board[i] = localDeck.drawCard();
+				}
+
+				cout << "The flop has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl;
+
+				pressAnyKey();
+
+				if (!localPlayer1->getFoldStatus()) localPlayer1->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer2->getFoldStatus()) localPlayer2->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer3->getFoldStatus()) localPlayer3->play(currentPrizePool, currentBetAmount, Board);
+				if (!localDealer->getFoldStatus()) localDealer->play(currentPrizePool, currentBetAmount, Board);
+
+				++round;
+			}
+			else if (round == 6 && foldCount != 3)
+			{
+				system("cls");
+				Board[3] = localDeck.drawCard();
+
+				cout << "The turn has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl
+					<< "            " << Board[3] << endl;
+
+				if (!localPlayer1->getFoldStatus()) localPlayer1->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer2->getFoldStatus()) localPlayer2->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer3->getFoldStatus()) localPlayer3->play(currentPrizePool, currentBetAmount, Board);
+				if (!localDealer->getFoldStatus()) localDealer->play(currentPrizePool, currentBetAmount, Board);
+
+				++round;
+			}
+			else if (round == 7 && foldCount != 3)
+			{
+				system("cls");
+				Board[4] = localDeck.drawCard();
+
+				cout << "The river has been drawn." << endl << endl
+					<< "The board: " << endl
+					<< "            " << Board[0] << endl
+					<< "            " << Board[1] << endl
+					<< "            " << Board[2] << endl
+					<< "            " << Board[3] << endl
+					<< "            " << Board[4] << endl;
+
+				if (!localPlayer1->getFoldStatus()) localPlayer1->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer2->getFoldStatus()) localPlayer2->play(currentPrizePool, currentBetAmount, Board);
+				if (!localPlayer3->getFoldStatus()) localPlayer3->play(currentPrizePool, currentBetAmount, Board);
+				if (!localDealer->getFoldStatus()) localDealer->play(currentPrizePool, currentBetAmount, Board);
+
+				++round;
+			}
+			else if (round == 8 && foldCount != 3)
+			{
+				system("cls");
+
+				Player* activePlayers[4] = { localPlayer1, localPlayer2, localPlayer3, localDealer };
+				determineWinner(activePlayers, Board, 4, currentPrizePool);
+				currentPrizePool = 0;
+
+				pressAnyKey();
+				++round;
+			}
+		} while (round < 9 && foldCount != 3);
+
+		system("cls");
+		cout << "Would you like to play again? y/n \n";
+
+		do
+		{
+			cin >> YorN;
+		} while (YorN != 'y' && YorN != 'n');
+
+		if (YorN == 'y')
+		{
+			playAgain = 1;
+		}
+		else playAgain = 0;
+
+		if (p1Ptr->checkIfDealer() == 1)
+		{
+			p1Ptr->setDealer(0);
+			p2Ptr->setDealer(1);
+		}
+		else if (p2Ptr->checkIfDealer() == 1)
+		{
+			p2Ptr->setDealer(0);
+			p3Ptr->setDealer(1);
+		}
+		else if (p3Ptr->checkIfDealer() == 1)
+		{
+			p3Ptr->setDealer(0);
+			p4Ptr->setDealer(1);
+		}
+		else if (p4Ptr->checkIfDealer() == 1)
+		{
+			p4Ptr->setDealer(0);
+			p1Ptr->setDealer(1);
+		}
+
+	} while (playAgain == 1);
+}
+
+void TexasHoldem::chooseDealer(Player& p1Ref, Player& p2Ref, Player& p3Ref, Player& p4Ref)
+{
+	srand((unsigned)time(NULL));
+	int dealer = rand() % 4 + 1;
+
+	if (dealer == 1) {
+		p1Ref.setDealer(1);
+		cout << "Player 1 is the dealer!" << endl;
+	}
+	else if (dealer == 2) {
+		p2Ref.setDealer(1);
+		cout << "Player 2 is the dealer!" << endl;
+	}
+	else if (dealer == 3) {
+		p3Ref.setDealer(1);
+		cout << "Player 3 is the dealer!" << endl;
+	}
+	else if (dealer == 4) {
+		p4Ref.setDealer(1);
+		cout << "Player 4 is the dealer!" << endl;
+	}
+}
+
 void TexasHoldem::update()
 {
 	if (currentState == TRANSITIONING)
@@ -825,9 +859,8 @@ void TexasHoldem::update()
 				fadingToBlack = false;
 				backgroundSprite.setTexture(menuTexture, true);
 
-				// Resize the background texture cause it's smaller
 				sf::Vector2u textureSize = menuTexture.getSize();
-				backgroundSprite.setScale({ 1280.f / textureSize.x, 720.f / textureSize.y });
+				backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT / (float)textureSize.y });
 			}
 		}
 		else {
@@ -838,7 +871,6 @@ void TexasHoldem::update()
 			}
 		}
 
-		// Apply the new alpha to the shape
 		fadeShape.setFillColor(sf::Color(0, 0, 0, static_cast<std::uint8_t>(fadeAlpha)));
 	}
 	else if (currentState == MAIN_MENU)
@@ -851,6 +883,7 @@ void TexasHoldem::update()
 	}
 	else if (currentState == PLAYING)
 	{
+		// Text hover effects for gameplay buttons
 		if (dealButton->isMouseOver(window)) dealButton->setTextColor(sf::Color::White);
 		else dealButton->setTextColor(sf::Color::Black);
 
@@ -863,23 +896,18 @@ void TexasHoldem::update()
 		if (foldButton->isMouseOver(window)) foldButton->setTextColor(sf::Color::White);
 		else foldButton->setTextColor(sf::Color::Black);
 
-		// Automate CPU turns
-		// If betting and the player isn't 0
+		// CPU turns
 		if (currentPhase == BETTING && turnOrder[activePlayerIndex] != &p1)
 		{
 			Player* cpuPlayer = turnOrder[activePlayerIndex];
 
-			// Delay CPU action so it doesn't end right away if folding
 			if (cpuThinkTimer.getElapsedTime().asSeconds() > 3.f)
 			{
 				if (!cpuPlayer->getFoldStatus())
 				{
 					float oldBet = currentBet;
-
-					// Call the backend CPU logic
 					float result = cpuPlayer->play(prizePool, currentBet, boardCards, 0);
 
-					// Update the UI log with what the CPU decided to do
 					if (result == 0 && cpuPlayer->getFoldStatus()) {
 						actionLogText.setString(cpuPlayer->getPlayerID() + " FOLDED.");
 					}
@@ -915,29 +943,21 @@ void TexasHoldem::render()
 	}
 	else if (currentState == PLAYING)
 	{
-		// Draw the GUI text elements
 		window.draw(potText);
 		window.draw(betText);
 		window.draw(balanceText);
 		window.draw(actionLogText);
 
-		// Draw cards
 		for (const auto& sprite : boardSprites) window.draw(sprite);
 		for (const auto& sprite : playerHandSprites) window.draw(sprite);
 
-		if (currentPhase == SHOWDOWN)
+		if (currentPhase == SHOWDOWN || currentPhase == DEALING)
 		{
-			window.draw(winnerTextDisplay);
-			dealButton->drawTo(window);
-		}
-		// Deals community cards
-		else if (currentPhase == DEALING)
-		{
+			if (currentPhase == SHOWDOWN) window.draw(winnerTextDisplay);
 			dealButton->drawTo(window);
 		}
 		else if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 && !p1.getFoldStatus())
 		{
-			// Show betting buttons only on a human player's turn
 			callButton->drawTo(window);
 			raiseButton->drawTo(window);
 			foldButton->drawTo(window);
@@ -946,3 +966,6 @@ void TexasHoldem::render()
 
 	window.display();
 }
+
+void TexasHoldem::chooseDealerRandomly() {}
+void TexasHoldem::assignTurnOrder() {}

@@ -39,6 +39,7 @@
     <ClInclude Include="NetworkPlayer.hpp" />
     <ClInclude Include="Player.hpp" />
     <ClInclude Include="TexasHoldem.hpp" />
+    <ClInclude Include="UIElement.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg-configuration.json" />

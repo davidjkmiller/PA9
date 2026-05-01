@@ -2,8 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <string>
+#include "UIElement.hpp"
 
-class Button
+class Button : public UIElement
 {
 public:
 	// Constructor to set up the button's visuals
@@ -14,12 +15,12 @@ public:
 	void setPosition(sf::Vector2f pos);
 
 	// Draw the button to the main window
-	void drawTo(sf::RenderWindow& window);
+	void drawTo(sf::RenderWindow& window) override;
 
 	// Check if the mouse is currently over the button
-	bool isMouseOver(sf::RenderWindow& window);
-	void setBackColor(sf::Color color);
+	bool isMouseOver(sf::RenderWindow& window) override;
 	void setTextColor(sf::Color color);
+	void setBackColor(sf::Color color);
 
 private:
 	sf::RectangleShape buttonShape;

@@ -1,17 +1,25 @@
 #pragma once
 
 //Headers
+#include <SFML/Graphics.hpp>
 #include "Deck.hpp"
 #include "Button.hpp"
 #include "ImageButton.hpp"
+#include "UIElement.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
 #include <string>
+#include "NetworkManager.hpp"
+#include "NetworkPlayer.hpp"
 
 //enums for organization
-enum OPTIONS : int {PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT};
-enum PLAY_OPTIONS: int {SINGLEPLAYER = 1, MULTIPLAYER = 2, BACK = 3};
+enum OPTIONS : int { PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT };
+enum PLAY_OPTIONS : int { SINGLEPLAYER = 1, MULTIPLAYER = 2, BACK = 3 };
+
+enum GameState { TITLE_SCREEN, TRANSITIONING, MAIN_MENU, PLAYING, EXITING };
+enum PlayPhase { DEALING, BETTING, SHOWDOWN };
+enum RoundStage { WAITING_TO_START, PRE_FLOP, FLOP, TURN, RIVER };
 
 // Global constants for changing sizes for testing, etc.
 namespace Constants {
@@ -43,6 +51,13 @@ public:
 
 private:
 	NetworkManager mpNetwork;
+
+	int roundNumber;
+	int activePlayerIndex;
+	int playersActed;
+	sf::RectangleShape fadeShape;
+	float fadeAlpha;
+	bool fadingToBlack;
 
 	void processEvents();
 	void update();
@@ -85,14 +100,16 @@ private:
 	std::map<std::string, sf::Texture> cardTextures;
 	sf::Sprite backgroundSprite;
 
-	// Main menu buttions
+	// Vector to hold all UIElements for easy rendering and cleanup
+	std::vector<UIElement*> uiElements;
+
+	// Main menu buttons (kept for easy input checking)
 	ImageButton* playButton;
 	ImageButton* rulesButton;
 	ImageButton* tipButton;
 	ImageButton* creditsButton;
 	ImageButton* exitButton;
 
-	// Gameplay buttons
 	Button* dealButton;
 	Button* callButton;
 	Button* raiseButton;

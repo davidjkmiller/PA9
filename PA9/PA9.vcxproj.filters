@@ -39,6 +39,9 @@
     <ClCompile Include="Card.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkManager.hpp">
@@ -64,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="Constants.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UIElement.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkPlayer.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

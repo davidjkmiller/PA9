@@ -17,17 +17,12 @@ void Button::setPosition(sf::Vector2f pos)
 	// Get local bounds for the text
 	sf::FloatRect textBounds = text.getLocalBounds();
 
-	// Set the text origin to be the center
-	text.setOrigin({
-		textBounds.position.x + (textBounds.size.x / 2.0f),
-		textBounds.position.y + (textBounds.size.y / 2.0f)
-		});
+	// Center the text inside the button shape
+	float xPos = (pos.x + buttonShape.getSize().x / 2.0f) - (textBounds.size.x / 2.0f);
+	float yPos = (pos.y + buttonShape.getSize().y / 2.0f) - (textBounds.size.y / 2.0f);
 
-	// Set the text position to be the center, which should work since the origin is the center now as well
-	text.setPosition({
-		pos.x + (buttonShape.getSize().x / 2.0f),
-		pos.y + (buttonShape.getSize().y / 2.0f)
-		});
+	// Y position slight adjustment
+	text.setPosition({ xPos, yPos - (textBounds.size.y / 2.0f) });
 }
 
 void Button::drawTo(sf::RenderWindow& window)
@@ -38,19 +33,20 @@ void Button::drawTo(sf::RenderWindow& window)
 
 bool Button::isMouseOver(sf::RenderWindow& window)
 {
-	// Get the current mouse coordinates and map to world coordinates
+	// Get the mouse position relative to the window
 	sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-	// Check if the button bounds contains the current mouse position
-	sf::FloatRect bounds = buttonShape.getGlobalBounds();
-	if (bounds.contains(mousePos))
-	{
-		return true;
-	}
-	return false;
+	// Check if the mouse is inside the button's global bounds
+	return buttonShape.getGlobalBounds().contains(mousePos);
 }
 
 void Button::setTextColor(sf::Color color)
 {
 	text.setFillColor(color);
 }
+
+void Button::setBackColor(sf::Color color)
+{
+	buttonShape.setFillColor(color);
+}
+
