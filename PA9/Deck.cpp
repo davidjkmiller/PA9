@@ -36,7 +36,7 @@ void Deck::initDeck()
 			deckInOrder[spriteIndex].setSuit(suit[suitIndex]);
 			deckInOrder[spriteIndex].setFace(face[faceIndex]);
 			deckInOrder[spriteIndex].setSprite(sprite[spriteIndex]);
-			deckInOrder[spriteIndex].setRank(suitIndex + 1);
+			deckInOrder[spriteIndex].setRank(faceIndex + 1);;
 
 			++spriteIndex;
 		}

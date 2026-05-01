@@ -96,6 +96,8 @@ private:
 	sf::Texture tipDevsButtonTexture;
 	sf::Texture creditsButtonTexture;
 	sf::Texture exitButtonTexture;
+	// sf::Texture multiButtonTexture;
+	Button* multiButton;
 
 	std::map<std::string, sf::Texture> cardTextures;
 	sf::Sprite backgroundSprite;
@@ -109,6 +111,7 @@ private:
 	ImageButton* tipButton;
 	ImageButton* creditsButton;
 	ImageButton* exitButton;
+	//ImageButton* multiButton;
 
 	Button* dealButton;
 	Button* callButton;

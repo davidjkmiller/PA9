@@ -67,6 +67,7 @@ void TexasHoldem::loadAssets()
 	if (!tipDevsButtonTexture.loadFromFile("Assets/menus/tipdevs_menu.png")) std::cout << "Missing tipdevs_menu.png\n";
 	if (!creditsButtonTexture.loadFromFile("Assets/menus/credits_menu.png")) std::cout << "Missing credits_menu.png\n";
 	if (!exitButtonTexture.loadFromFile("Assets/menus/exit_menu.png")) std::cout << "Missing exit_menu.png\n";
+	// if (!multiButtonTexture.loadFromFile("Assets/menus/multi_menu.png")) std::cout << "Missing multi_menu.png\n";
 
 	backgroundSprite.setTexture(titleTexture, true);
 	sf::Vector2u textureSize = titleTexture.getSize();
@@ -117,6 +118,11 @@ void TexasHoldem::loadAssets()
 	foldButton = new Button(mainFont, "FOLD", { 200.f, 80.f }, 55, sf::Color(150, 0, 0), sf::Color::White);
 	foldButton->setPosition({ Constants::ACTION_BTN_START_X + (Constants::ACTION_BTN_SPACING * 2), Constants::ACTION_BTN_START_Y });
 
+	// multiButton = new ImageButton(multiButtonTexture, { centerX, 280.f });
+	float multiX = centerX - 150.f;
+	multiButton = new Button(mainFont, "MULTIPLAYER", { 300.f, 80.f }, 45, sf::Color(0, 50, 150), sf::Color::White);
+	multiButton->setPosition({ 200.f, 280.f });
+
 	uiElements.push_back(playButton);
 	uiElements.push_back(rulesButton);
 	uiElements.push_back(tipButton);
@@ -126,6 +132,7 @@ void TexasHoldem::loadAssets()
 	uiElements.push_back(callButton);
 	uiElements.push_back(raiseButton);
 	uiElements.push_back(foldButton);
+	uiElements.push_back(multiButton);
 }
 
 std::string TexasHoldem::getFilenameForCard(Card card)
@@ -352,13 +359,14 @@ void TexasHoldem::processEvents()
 						"Two Pair: Two different pairs of cards\n"
 						"One Pair: Two cards of the same rank\n"
 						"High Card: The highest card in hand when no other combination is made\n" << endl;
-					else if (tipButton->isMouseOver(window)) std::cout << "Here's a tip: water is wet\n" << endl;
+					else if (tipButton->isMouseOver(window)) std::cout << "David Miller - @davidjkmiller\n" << endl;
 					else if (creditsButton->isMouseOver(window)) std::cout << "Actual page will be implemented soon!\n"
 						"Caroline Fischer\n"
 						"David Miller\n"
 						"Owen Tweedt\n"
 						"Benjamin Siev\n" << endl;
 					else if (exitButton->isMouseOver(window)) currentState = EXITING;
+					else if (multiButton->isMouseOver(window)) std::cout << "Test -> Multiplayer clicked\n";
 				}
 				else if (currentState == PLAYING)
 				{
@@ -948,7 +956,11 @@ void TexasHoldem::update()
 	}
 	else if (currentState == MAIN_MENU)
 	{
+		if (multiButton->isMouseOver(window)) multiButton->setBackColor(sf::Color(0, 100, 200)); // Lighter Blue
+		else multiButton->setBackColor(sf::Color(0, 50, 150));
+
 		playButton->setHoverEffect(playButton->isMouseOver(window));
+		//multiButton->setHoverEffect(multiButton->isMouseOver(window));
 		rulesButton->setHoverEffect(rulesButton->isMouseOver(window));
 		tipButton->setHoverEffect(tipButton->isMouseOver(window));
 		creditsButton->setHoverEffect(creditsButton->isMouseOver(window));
@@ -1012,6 +1024,7 @@ void TexasHoldem::render()
 		tipButton->drawTo(window);
 		creditsButton->drawTo(window);
 		exitButton->drawTo(window);
+		multiButton->drawTo(window);
 	}
 	else if (currentState == PLAYING)
 	{
