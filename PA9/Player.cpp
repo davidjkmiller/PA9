@@ -500,16 +500,16 @@ float CPU::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) 
 
 	srand((unsigned)time(NULL)); /* seed random-number generator */
 
-	choice = rand() % 3 + 1;
+	choice = rand() % 10 + 1;
 
-	if (choice == 1) //CALL
+	if (choice >= 1 && choice < 7) //CALL
 	{
 		setBalance(-currentBet);
 		prizePool += currentBet;
 
 		return currentBet;
 	}
-	else if (choice == 2) //RAISE
+	else if (choice >= 7 && choice < 10) //RAISE
 	{
 		currentBet *= 2; //double the bet
 		setBalance(-currentBet);
@@ -517,7 +517,7 @@ float CPU::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) 
 
 		return currentBet;
 	}
-	else if (choice == 3) //FOLD
+	else if (choice == 10) //FOLD
 	{
 		setFoldStatus(1);
 
