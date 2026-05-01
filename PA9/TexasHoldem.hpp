@@ -12,6 +12,10 @@
 #include <string>
 #include "NetworkManager.hpp"
 #include "NetworkPlayer.hpp"
+#include "Constants.hpp"
+#include <SFML/Audio.hpp>
+#include <filesystem>
+#include <random>
 
 //enums for organization
 enum OPTIONS : int { PLAY = 1, RULES, TIP_DEVS, CREDITS, EXIT };
@@ -20,13 +24,6 @@ enum PLAY_OPTIONS : int { SINGLEPLAYER = 1, MULTIPLAYER = 2, BACK = 3 };
 enum GameState { TITLE_SCREEN, TRANSITIONING, MAIN_MENU, PLAYING, EXITING };
 enum PlayPhase { DEALING, BETTING, SHOWDOWN };
 enum RoundStage { WAITING_TO_START, PRE_FLOP, FLOP, TURN, RIVER };
-
-// Global constants for changing sizes for testing, etc.
-namespace Constants {
-	inline constexpr int SCREEN_WIDTH = 1920;
-	inline constexpr int SCREEN_HEIGHT = 1080;
-	inline constexpr float SCREEN_WIDTH_FLOAT = 1920.f;
-}
 
 class TexasHoldem
 {
@@ -76,8 +73,10 @@ private:
 	std::string getHandName(int score);
 	std::string determineWinner();
 	void updateUI();
+	void initMusic();
 
 	sf::RenderWindow window;
+	sf::Music backgroundMusic;
 
 	GameState currentState;
 	PlayPhase currentPhase;
@@ -90,6 +89,7 @@ private:
 	sf::Texture menuTexture;
 	sf::Texture gameBgTexture;
 	sf::Font mainFont;
+	sf::Texture cardBackTexture;
 
 	sf::Texture playButtonTexture;
 	sf::Texture rulebuttonTexture;
@@ -128,6 +128,7 @@ private:
 	CPU c2, c3, c4;
 	Player* players[4];
 	Card boardCards[5];
+	std::vector<bool> playerCardVisible;
 
 	Player* Dealer;
 	Player* player1;

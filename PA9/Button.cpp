@@ -6,7 +6,8 @@ Button::Button(const sf::Font& font, std::string buttonText, sf::Vector2f button
 {
 	buttonShape.setSize(buttonSize);
 	buttonShape.setFillColor(bgColor);
-
+	buttonShape.setOutlineThickness(3.f);
+	buttonShape.setOutlineColor(sf::Color::Black);
 	text.setFillColor(textColor);
 }
 
@@ -18,11 +19,11 @@ void Button::setPosition(sf::Vector2f pos)
 	sf::FloatRect textBounds = text.getLocalBounds();
 
 	// Center the text inside the button shape
-	float xPos = (pos.x + buttonShape.getSize().x / 2.0f) - (textBounds.size.x / 2.0f);
-	float yPos = (pos.y + buttonShape.getSize().y / 2.0f) - (textBounds.size.y / 2.0f);
+	float xPos = pos.x + (buttonShape.getSize().x / 2.0f) - (textBounds.size.x / 2.0f) - textBounds.position.x;
+	float yPos = pos.y + (buttonShape.getSize().y / 2.0f) - (textBounds.size.y / 2.0f) - textBounds.position.y;
 
 	// Y position slight adjustment
-	text.setPosition({ xPos, yPos - (textBounds.size.y / 2.0f) });
+	text.setPosition({ xPos, yPos });
 }
 
 void Button::drawTo(sf::RenderWindow& window)

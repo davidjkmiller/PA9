@@ -11,8 +11,8 @@ using std::endl;
 void pressAnyKey();
 
 TexasHoldem::TexasHoldem() : window(sf::VideoMode({ Constants::SCREEN_WIDTH, Constants::SCREEN_HEIGHT }), "Texas Hold'em"), backgroundSprite(titleTexture),
-winnerTextDisplay(mainFont, "", 35), actionLogText(mainFont, "", 24),
-potText(mainFont, "", 20), betText(mainFont, "", 20), balanceText(mainFont, "", 20) {
+winnerTextDisplay(mainFont, "", Constants::FONT_SIZE), actionLogText(mainFont, "", Constants::FONT_SIZE),
+potText(mainFont, "", Constants::FONT_SIZE), betText(mainFont, "", Constants::FONT_SIZE), balanceText(mainFont, "", Constants::FONT_SIZE) {
 
 	window.setFramerateLimit(60);
 
@@ -21,7 +21,7 @@ potText(mainFont, "", 20), betText(mainFont, "", 20), balanceText(mainFont, "", 
 	currentStage = WAITING_TO_START;
 
 	// Invisible box to fake a fade transition
-	fadeShape.setSize({ Constants::SCREEN_WIDTH_FLOAT, (float)Constants::SCREEN_HEIGHT });
+	fadeShape.setSize({ Constants::SCREEN_WIDTH_FLOAT, Constants::SCREEN_HEIGHT_FLOAT });
 	fadeShape.setFillColor(sf::Color(0, 0, 0, 0));
 	fadeAlpha = 0.f;
 	fadingToBlack = true;
@@ -45,6 +45,7 @@ potText(mainFont, "", 20), betText(mainFont, "", 20), balanceText(mainFont, "", 
 	}
 
 	loadAssets();
+	initMusic();
 }
 
 TexasHoldem::~TexasHoldem() {
@@ -60,7 +61,7 @@ void TexasHoldem::loadAssets()
 	if (!titleTexture.loadFromFile("Assets/menus/splashScreen.png")) std::cout << "Failed to load title screen!\n";
 	if (!menuTexture.loadFromFile("Assets/menus/tableBG.png")) std::cout << "Failed to load menu screen!\n";
 	if (!gameBgTexture.loadFromFile("Assets/menus/tableBG.png")) std::cout << "Failed to load game screen!\n";
-
+	if (!cardBackTexture.loadFromFile("Assets/cards/cardBack.png")) std::cout << "Missing cardBack.png\n";
 	if (!playButtonTexture.loadFromFile("Assets/menus/play_menu.png")) std::cout << "Missing play_menu.png\n";
 	if (!rulebuttonTexture.loadFromFile("Assets/menus/rule_menu.png")) std::cout << "Missing rule_menu.png\n";
 	if (!tipDevsButtonTexture.loadFromFile("Assets/menus/tipdevs_menu.png")) std::cout << "Missing tipdevs_menu.png\n";
@@ -68,6 +69,9 @@ void TexasHoldem::loadAssets()
 	if (!exitButtonTexture.loadFromFile("Assets/menus/exit_menu.png")) std::cout << "Missing exit_menu.png\n";
 
 	backgroundSprite.setTexture(titleTexture, true);
+	sf::Vector2u textureSize = titleTexture.getSize();
+	backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT_FLOAT / textureSize.y });
+
 
 	if (!mainFont.openFromFile("Assets/CowboyMovie.ttf")) {
 		std::cout << "WARNING: Font failed to load! Buttons will not display text.\n";
@@ -80,35 +84,38 @@ void TexasHoldem::loadAssets()
 	balanceText.setFont(mainFont);
 
 	winnerTextDisplay.setFillColor(sf::Color::Yellow);
-	winnerTextDisplay.setPosition({ 400.f, 350.f });
+	winnerTextDisplay.setCharacterSize(60);
+	winnerTextDisplay.setPosition({ Constants::WINNER_TEXT_X, Constants::WINNER_TEXT_Y });
 
 	actionLogText.setFillColor(sf::Color::White);
-	actionLogText.setPosition({ 400.f, 20.f });
+	actionLogText.setPosition({ Constants::LOG_TEXT_X, Constants::LOG_TEXT_Y });
 
 	potText.setFillColor(sf::Color::White);
-	potText.setPosition({ 20.f, 20.f });
+	potText.setPosition({ 50.f, 50.f });
 	betText.setFillColor(sf::Color::White);
-	betText.setPosition({ 20.f, 50.f });
+	betText.setPosition({ 50.f, 100.f });
 	balanceText.setFillColor(sf::Color::White);
-	balanceText.setPosition({ 20.f, 80.f });
+	balanceText.setPosition({ 50.f, 150.f });
 
-	playButton = new ImageButton(playButtonTexture, { 640.f, 80.f });
-	rulesButton = new ImageButton(rulebuttonTexture, { 640.f, 200.f });
-	tipButton = new ImageButton(tipDevsButtonTexture, { 640.f, 350.f });
-	creditsButton = new ImageButton(creditsButtonTexture, { 640.f, 500.f });
-	exitButton = new ImageButton(exitButtonTexture, { 640.f, 650.f });
+	float centerX = Constants::SCREEN_WIDTH_FLOAT / 2.0f;
 
-	dealButton = new Button(mainFont, "DEAL NEXT", { 150.f, 50.f }, 75, sf::Color::Transparent, sf::Color::Black);
-	dealButton->setPosition({ 1050.f, 600.f });
+	playButton = new ImageButton(playButtonTexture, { centerX, 200.f });
+	rulesButton = new ImageButton(rulebuttonTexture, { centerX, 350.f });
+	tipButton = new ImageButton(tipDevsButtonTexture, { centerX, 500.f });
+	creditsButton = new ImageButton(creditsButtonTexture, { centerX, 650.f });
+	exitButton = new ImageButton(exitButtonTexture, { centerX, 800.f });
 
-	callButton = new Button(mainFont, "CALL", { 100.f, 50.f }, 75, sf::Color(50, 150, 50), sf::Color::White);
-	callButton->setPosition({ 850.f, 500.f });
+	dealButton = new Button(mainFont, "DEAL NEXT", { 280.f, 80.f }, 55, sf::Color::Transparent, sf::Color::Black);
+	dealButton->setPosition({ Constants::DEAL_BTN_X, Constants::ACTION_BTN_START_Y });
 
-	raiseButton = new Button(mainFont, "RAISE", { 100.f, 50.f }, 75, sf::Color(150, 100, 50), sf::Color::White);
-	raiseButton->setPosition({ 850.f, 550.f });
+	callButton = new Button(mainFont, "CALL", { 200.f, 80.f }, 55, sf::Color(180, 150, 0), sf::Color::White);
+	callButton->setPosition({ Constants::ACTION_BTN_START_X, Constants::ACTION_BTN_START_Y });
 
-	foldButton = new Button(mainFont, "FOLD", { 100.f, 40.f }, 75, sf::Color(150, 50, 50), sf::Color::White);
-	foldButton->setPosition({ 850.f, 600.f });
+	raiseButton = new Button(mainFont, "RAISE", { 200.f, 80.f }, 55, sf::Color(0, 120, 0), sf::Color::White);
+	raiseButton->setPosition({ Constants::ACTION_BTN_START_X + Constants::ACTION_BTN_SPACING, Constants::ACTION_BTN_START_Y });
+
+	foldButton = new Button(mainFont, "FOLD", { 200.f, 80.f }, 55, sf::Color(150, 0, 0), sf::Color::White);
+	foldButton->setPosition({ Constants::ACTION_BTN_START_X + (Constants::ACTION_BTN_SPACING * 2), Constants::ACTION_BTN_START_Y });
 
 	uiElements.push_back(playButton);
 	uiElements.push_back(rulesButton);
@@ -165,26 +172,42 @@ void TexasHoldem::updateUI()
 
 void TexasHoldem::startNewRound()
 {
+	// Reset player stats
+	p1.setFoldStatus(0);
+	c2.setFoldStatus(0);
+	c3.setFoldStatus(0);
+	c4.setFoldStatus(0);
+
+	currentBet = Constants::STARTING_BET;
+	roundNumber++;
+
 	deck.initDeck();
 	deck.shuffleDeck();
+
 	rotateDealer();
 	deck.deal(player1, player2, player3, Dealer);
 
 	playerHandSprites.clear();
 	boardSprites.clear();
+	playerCardVisible.clear();
+
 	actionLogText.setString("ROUND " + std::to_string(roundNumber) + "! " + player1->getPlayerID() + " POSTS SMALL BLIND.");
 
 	for (int i = 0; i < 2; i++) {
 		sf::Sprite sprite(getCardTexture(p1.getHand()[i]));
-		sprite.setScale({ 1.5f, 1.5f });
-		sprite.setPosition({ 500.f + (i * 120.f), 500.f });
+		sprite.setScale({ Constants::CARD_SCALE, Constants::CARD_SCALE });
+		sprite.setPosition({ Constants::PLAYER_HAND_START_X + (i * Constants::CARD_SPACING_X), Constants::PLAYER_HAND_START_Y });
+
 		playerHandSprites.push_back(sprite);
+		playerCardVisible.push_back(true);
 	}
 
 	currentStage = PRE_FLOP;
 	currentPhase = BETTING;
+
 	playersActed = 0;
 	activePlayerIndex = 0;
+	cpuThinkTimer.restart();
 
 	updateUI();
 }
@@ -200,17 +223,22 @@ void TexasHoldem::advanceTurn()
 		currentPhase = SHOWDOWN;
 		winnerTextDisplay.setString(determineWinner());
 		actionLogText.setString("ROUND ENDED. CLICK DEAL NEXT FOR NEW ROUND.");
+		updateUI();
 		return;
 	}
+
+	playersActed++;
 
 	if (playersActed >= 4) {
 		currentPhase = DEALING;
 		actionLogText.setString("BETTING COMPLETE. CLICK 'DEAL NEXT' TO CONTINUE.");
 	}
 	else {
+		// Move to the next player
 		activePlayerIndex = (activePlayerIndex + 1) % 4;
 		cpuThinkTimer.restart();
 
+		// Skip folded players automatically
 		while (turnOrder[activePlayerIndex]->getFoldStatus() && playersActed < 4) {
 			playersActed++;
 			activePlayerIndex = (activePlayerIndex + 1) % 4;
@@ -221,6 +249,8 @@ void TexasHoldem::advanceTurn()
 			actionLogText.setString("BETTING COMPLETE. CLICK 'DEAL NEXT' TO CONTINUE.");
 		}
 	}
+
+	updateUI();
 }
 
 void TexasHoldem::advanceRoundStage()
@@ -230,8 +260,9 @@ void TexasHoldem::advanceRoundStage()
 		for (int i = 0; i < 3; i++) {
 			boardCards[i] = deck.drawCard();
 			sf::Sprite sprite(getCardTexture(boardCards[i]));
-			sprite.setScale({ 1.5f, 1.5f });
-			sprite.setPosition({ 300.f + (i * 120.f), 250.f });
+			sprite.setScale({ Constants::CARD_SCALE, Constants::CARD_SCALE });
+			sprite.setPosition({ Constants::BOARD_START_X + (i * Constants::CARD_SPACING_X), Constants::BOARD_START_Y });
+
 			boardSprites.push_back(sprite);
 		}
 		currentStage = FLOP;
@@ -240,8 +271,9 @@ void TexasHoldem::advanceRoundStage()
 	{
 		boardCards[3] = deck.drawCard();
 		sf::Sprite sprite(getCardTexture(boardCards[3]));
-		sprite.setScale({ 1.5f, 1.5f });
-		sprite.setPosition({ 300.f + (3 * 120.f), 250.f });
+		sprite.setScale({ Constants::CARD_SCALE, Constants::CARD_SCALE });
+		sprite.setPosition({ Constants::BOARD_START_X + (3 * Constants::CARD_SPACING_X), Constants::BOARD_START_Y });
+
 		boardSprites.push_back(sprite);
 		currentStage = TURN;
 	}
@@ -249,8 +281,9 @@ void TexasHoldem::advanceRoundStage()
 	{
 		boardCards[4] = deck.drawCard();
 		sf::Sprite sprite(getCardTexture(boardCards[4]));
-		sprite.setScale({ 1.5f, 1.5f });
-		sprite.setPosition({ 300.f + (4 * 120.f), 250.f });
+		sprite.setScale({ Constants::CARD_SCALE, Constants::CARD_SCALE });
+		sprite.setPosition({ Constants::BOARD_START_X + (4 * Constants::CARD_SPACING_X), Constants::BOARD_START_Y });
+
 		boardSprites.push_back(sprite);
 		currentStage = RIVER;
 	}
@@ -265,6 +298,8 @@ void TexasHoldem::advanceRoundStage()
 	currentPhase = BETTING;
 	playersActed = 0;
 	activePlayerIndex = 0;
+	cpuThinkTimer.restart();
+
 	actionLogText.setString("NEW CARDS DEALT! WAITING FOR BETS...");
 
 	while (turnOrder[activePlayerIndex]->getFoldStatus() && playersActed < 4) {
@@ -300,15 +335,53 @@ void TexasHoldem::processEvents()
 						currentState = PLAYING;
 						backgroundSprite.setTexture(gameBgTexture, true);
 						sf::Vector2u textureSize = gameBgTexture.getSize();
-						backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT / (float)textureSize.y });
+						backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT_FLOAT / textureSize.y });
 					}
-					else if (rulesButton->isMouseOver(window)) std::cout << "Test -> Rules clicked\n";
-					else if (tipButton->isMouseOver(window)) std::cout << "Test -> Tip devs clicked\n";
-					else if (creditsButton->isMouseOver(window)) std::cout << "Test -> Credits clicked\n";
+					else if (rulesButton->isMouseOver(window)) std::cout << "Actual page will be implemented soon!\n"
+						"Texas Hold'em is a poker game where players use two private hole cards and five shared community cards to make the best five-card hand\n"
+						"Each player receives two cards face-down, followed by three rounds of community cards (Flop, Turn, River) and betting\n"
+						"The highest hand wins, and players can win by having the best hand or being the last remaining player\n\n"
+						"Hand Rankings (Best -> Worst):\n"
+						"Royal Flush: 10, Jack, Queen, King, Ace, all of the same suit\n"
+						"Straight Flush: Five cards in sequence, all in the same suit\n"
+						"Four of a Kind (Quads): Four cards of the same rank\n"
+						"Full House: Three cards of one rank plus a pair of another rank\n"
+						"Flush: Any five cards of the same suit, not in sequence\n"
+						"Straight: Five cards in sequence, of mixed suits\n"
+						"Three of a Kind: Three cards of the same rank\n"
+						"Two Pair: Two different pairs of cards\n"
+						"One Pair: Two cards of the same rank\n"
+						"High Card: The highest card in hand when no other combination is made\n" << endl;
+					else if (tipButton->isMouseOver(window)) std::cout << "Here's a tip: water is wet\n" << endl;
+					else if (creditsButton->isMouseOver(window)) std::cout << "Actual page will be implemented soon!\n"
+						"Caroline Fischer\n"
+						"David Miller\n"
+						"Owen Tweedt\n"
+						"Benjamin Siev\n" << endl;
 					else if (exitButton->isMouseOver(window)) currentState = EXITING;
 				}
 				else if (currentState == PLAYING)
 				{
+					sf::Vector2f mousePos(static_cast<float>(mouseButton->position.x), static_cast<float>(mouseButton->position.y));
+
+					for (size_t i = 0; i < playerHandSprites.size(); i++)
+					{
+						// If the mouse clicked inside the bounds of this specific card
+						if (playerHandSprites[i].getGlobalBounds().contains(mousePos))
+						{
+							playerCardVisible[i] = !playerCardVisible[i]; // Flip the boolean state
+
+							if (playerCardVisible[i]) {
+								// Set to Face Up (The 2nd argument 'true' auto-resizes the sprite box if needed)
+								playerHandSprites[i].setTexture(getCardTexture(p1.getHand()[i]), true);
+							}
+							else {
+								// Set to Face Down
+								playerHandSprites[i].setTexture(cardBackTexture, true);
+							}
+						}
+					}
+
 					if ((currentPhase == DEALING || currentPhase == SHOWDOWN) && dealButton->isMouseOver(window))
 					{
 						if (currentStage == WAITING_TO_START || currentPhase == SHOWDOWN)
@@ -580,8 +653,8 @@ void TexasHoldem::determineWinner(Player* activePlayers[], Card* Board, int numP
 
 	if (nonFoldedCount == 1)
 	{
-		cout << "\nAll other players folded!" << endl;
-		cout << scores[0].player->getPlayerID() << " wins the pot of $" << prizePoolArg << "!" << endl;
+		cout << "\nALL OTHER PLAYERS FOLDED!" << endl;
+		cout << scores[0].player->getPlayerID() << " WINS THE POT OF $" << prizePoolArg << "!" << endl;
 		scores[0].player->setBalance(prizePoolArg);
 		return;
 	}
@@ -612,15 +685,15 @@ void TexasHoldem::determineWinner(Player* activePlayers[], Card* Board, int numP
 	cout << "\n===== SHOWDOWN =====" << endl;
 	for (int i = 0; i < nonFoldedCount; ++i)
 	{
-		cout << scores[i].player->getPlayerID() << " had a ";
+		cout << scores[i].player->getPlayerID() << " HAD A ";
 		cout << getHandName(scores[i].score) << endl;
 		scores[i].player->viewHand();
 		cout << endl;
 	}
 	cout << "===================" << endl;
 
-	cout << "\n\n" << winner->getPlayerID() << " wins!" << endl;
-	cout << "Prize pool: $" << prizePoolArg << endl;
+	cout << "\n\n" << winner->getPlayerID() << " WINS!" << endl;
+	cout << "PRIZE POOL: $" << prizePoolArg << endl;
 	winner->setBalance(prizePoolArg);
 }
 
@@ -649,7 +722,7 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 
 				localDeck.shuffleDeck();
 
-				cout << "The deck is shuffled. \n\n";
+				cout << "THE DECK IS SHUFFLED. \n\n";
 
 				if (p1Ptr->checkIfDealer() == 1)
 				{
@@ -683,8 +756,8 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 			}
 			else if (round == 2)
 			{
-				cout << localPlayer1->getPlayerID() << " must post the small blind and " << localPlayer2->getPlayerID() << " must post the big blind." << endl << endl;
-				cout << localPlayer1->getPlayerID() << " bets $" << currentBetAmount / 2 << ". Player 2 bets $" << currentBetAmount << "." << endl;
+				cout << localPlayer1->getPlayerID() << " MUST POST THE SMALL BLIND AND " << localPlayer2->getPlayerID() << " MUST POST THE BIG BLIND." << endl << endl;
+				cout << localPlayer1->getPlayerID() << " BETS $" << currentBetAmount / 2 << ". Player 2 bets $" << currentBetAmount << "." << endl;
 
 				currentPrizePool += currentBetAmount * 1.5f;
 				localPlayer1->setBalance(currentBetAmount / 2.0f);
@@ -697,7 +770,7 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 			else if (round == 3)
 			{
 				localDeck.deal(localPlayer1, localPlayer2, localPlayer3, localDealer);
-				cout << "Cards have been dealt. Players may now take their first action." << endl;
+				cout << "CARDS HAVE BEEN DEALT. PLAYERS MAY NOW TAKE THEIR FIRST ACTION." << endl;
 				pressAnyKey();
 				system("cls");
 				++round;
@@ -718,8 +791,8 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 					Board[i] = localDeck.drawCard();
 				}
 
-				cout << "The flop has been drawn." << endl << endl
-					<< "The board: " << endl
+				cout << "THE FLOP HAS BEEN DRAWN." << endl << endl
+					<< "THE BOARD: " << endl
 					<< "            " << Board[0] << endl
 					<< "            " << Board[1] << endl
 					<< "            " << Board[2] << endl;
@@ -738,8 +811,8 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 				system("cls");
 				Board[3] = localDeck.drawCard();
 
-				cout << "The turn has been drawn." << endl << endl
-					<< "The board: " << endl
+				cout << "THE TURN HAS BEEN DRAWN." << endl << endl
+					<< "THE BOARD: " << endl
 					<< "            " << Board[0] << endl
 					<< "            " << Board[1] << endl
 					<< "            " << Board[2] << endl
@@ -757,8 +830,8 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 				system("cls");
 				Board[4] = localDeck.drawCard();
 
-				cout << "The river has been drawn." << endl << endl
-					<< "The board: " << endl
+				cout << "THE RIVER HAS BEEN DRAWN." << endl << endl
+					<< "THE BOARD: " << endl
 					<< "            " << Board[0] << endl
 					<< "            " << Board[1] << endl
 					<< "            " << Board[2] << endl
@@ -786,7 +859,7 @@ void TexasHoldem::playGame(Player* p1Ptr, Player* p2Ptr, Player* p3Ptr, Player* 
 		} while (round < 9 && foldCount != 3);
 
 		system("cls");
-		cout << "Would you like to play again? y/n \n";
+		cout << "WOULD YOU LIKE TO PLAY AGAIN? Y/N \n";
 
 		do
 		{
@@ -830,19 +903,19 @@ void TexasHoldem::chooseDealer(Player& p1Ref, Player& p2Ref, Player& p3Ref, Play
 
 	if (dealer == 1) {
 		p1Ref.setDealer(1);
-		cout << "Player 1 is the dealer!" << endl;
+		cout << "PLAYER 1 IS THE DEALER!" << endl;
 	}
 	else if (dealer == 2) {
 		p2Ref.setDealer(1);
-		cout << "Player 2 is the dealer!" << endl;
+		cout << "PLAYER 2 IS THE DEALER!" << endl;
 	}
 	else if (dealer == 3) {
 		p3Ref.setDealer(1);
-		cout << "Player 3 is the dealer!" << endl;
+		cout << "PLAYER 3 IS THE DEALER!" << endl;
 	}
 	else if (dealer == 4) {
 		p4Ref.setDealer(1);
-		cout << "Player 4 is the dealer!" << endl;
+		cout << "PLAYER 4 IS THE DEALER!" << endl;
 	}
 }
 
@@ -860,7 +933,7 @@ void TexasHoldem::update()
 				backgroundSprite.setTexture(menuTexture, true);
 
 				sf::Vector2u textureSize = menuTexture.getSize();
-				backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT / (float)textureSize.y });
+				backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT_FLOAT / textureSize.y });
 			}
 		}
 		else {
@@ -883,25 +956,24 @@ void TexasHoldem::update()
 	}
 	else if (currentState == PLAYING)
 	{
-		// Text hover effects for gameplay buttons
-		if (dealButton->isMouseOver(window)) dealButton->setTextColor(sf::Color::White);
-		else dealButton->setTextColor(sf::Color::Black);
+		if (dealButton->isMouseOver(window)) dealButton->setBackColor(sf::Color(200, 200, 200));
+		else dealButton->setBackColor(sf::Color::Transparent);
 
-		if (callButton->isMouseOver(window)) callButton->setTextColor(sf::Color::White);
-		else callButton->setTextColor(sf::Color::Black);
+		if (callButton->isMouseOver(window)) callButton->setBackColor(sf::Color(255, 210, 0));
+		else callButton->setBackColor(sf::Color(180, 150, 0));
 
-		if (raiseButton->isMouseOver(window)) raiseButton->setTextColor(sf::Color::White);
-		else raiseButton->setTextColor(sf::Color::Black);
+		if (raiseButton->isMouseOver(window)) raiseButton->setBackColor(sf::Color(0, 180, 0));
+		else raiseButton->setBackColor(sf::Color(0, 120, 0));
 
-		if (foldButton->isMouseOver(window)) foldButton->setTextColor(sf::Color::White);
-		else foldButton->setTextColor(sf::Color::Black);
+		if (foldButton->isMouseOver(window)) foldButton->setBackColor(sf::Color(220, 0, 0));
+		else foldButton->setBackColor(sf::Color(150, 0, 0));
 
 		// CPU turns
 		if (currentPhase == BETTING && turnOrder[activePlayerIndex] != &p1)
 		{
 			Player* cpuPlayer = turnOrder[activePlayerIndex];
 
-			if (cpuThinkTimer.getElapsedTime().asSeconds() > 3.f)
+			if (cpuThinkTimer.getElapsedTime().asSeconds() > 2.f)
 			{
 				if (!cpuPlayer->getFoldStatus())
 				{
@@ -946,6 +1018,11 @@ void TexasHoldem::render()
 		window.draw(potText);
 		window.draw(betText);
 		window.draw(balanceText);
+
+		sf::FloatRect logBounds = actionLogText.getLocalBounds();
+		float centerLogX = (Constants::SCREEN_WIDTH_FLOAT / 2.0f) - (logBounds.size.x / 2.0f) - logBounds.position.x;
+		actionLogText.setPosition({ centerLogX, Constants::LOG_TEXT_Y });
+
 		window.draw(actionLogText);
 
 		for (const auto& sprite : boardSprites) window.draw(sprite);
@@ -953,7 +1030,17 @@ void TexasHoldem::render()
 
 		if (currentPhase == SHOWDOWN || currentPhase == DEALING)
 		{
-			if (currentPhase == SHOWDOWN) window.draw(winnerTextDisplay);
+			if (currentPhase == SHOWDOWN)
+			{
+				sf::FloatRect textBounds = winnerTextDisplay.getGlobalBounds();
+				sf::RectangleShape textBg({ textBounds.size.x + 40.f, textBounds.size.y + 40.f });
+
+				textBg.setFillColor(sf::Color(0, 0, 0, 220));
+				textBg.setPosition({ textBounds.position.x - 20.f, textBounds.position.y - 20.f });
+
+				window.draw(textBg);
+				window.draw(winnerTextDisplay);
+			}
 			dealButton->drawTo(window);
 		}
 		else if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 && !p1.getFoldStatus())
@@ -969,3 +1056,50 @@ void TexasHoldem::render()
 
 void TexasHoldem::chooseDealerRandomly() {}
 void TexasHoldem::assignTurnOrder() {}
+
+void TexasHoldem::initMusic()
+{
+	std::string musicFolderPath = "Assets/music/";
+	std::vector<std::string> songPaths;
+
+	if (std::filesystem::exists(musicFolderPath) && std::filesystem::is_directory(musicFolderPath))
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(musicFolderPath))
+		{
+			if (entry.path().extension() == ".mp3")
+			{
+				songPaths.push_back(entry.path().string());
+			}
+		}
+	}
+	else
+	{
+		std::cout << "Music folder not found at: " << musicFolderPath << "\n";
+		return;
+	}
+
+	if (!songPaths.empty())
+	{
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::uniform_int_distribution<size_t> dist(0, songPaths.size() - 1);
+
+		std::string chosenSong = songPaths[dist(gen)];
+
+		if (backgroundMusic.openFromFile(chosenSong))
+		{
+			backgroundMusic.setLooping(true);
+			backgroundMusic.setVolume(50.f); 
+			backgroundMusic.play();
+			std::cout << "Now playing: " << chosenSong << "\n";
+		}
+		else
+		{
+			std::cout << "Failed to open music file: " << chosenSong << "\n";
+		}
+	}
+	else
+	{
+		std::cout << "No .mp3 files found in the music folder.\n";
+	}
+}
