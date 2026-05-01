@@ -49,6 +49,9 @@ void Deck::shuffleDeck()
 {
 	srand((unsigned)time(NULL)); /* seed random-number generator */
 
+	// Assigns the deck to an empty stack of Card objects to clear in between rounds
+	deck = stack<Card>();
+
 	Card tempCard;
 	int i = 0;
 	int j = 0;

@@ -18,8 +18,8 @@ public:
 
 	// Check if the mouse is currently over the button
 	bool isMouseOver(sf::RenderWindow& window);
-
 	void setBackColor(sf::Color color);
+	void setTextColor(sf::Color color);
 
 private:
 	sf::RectangleShape buttonShape;

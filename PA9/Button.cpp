@@ -17,12 +17,17 @@ void Button::setPosition(sf::Vector2f pos)
 	// Get local bounds for the text
 	sf::FloatRect textBounds = text.getLocalBounds();
 
-	// Center the text inside the button shape
-	float xPos = (pos.x + buttonShape.getSize().x / 2.0f) - (textBounds.size.x / 2.0f);
-	float yPos = (pos.y + buttonShape.getSize().y / 2.0f) - (textBounds.size.y / 2.0f);
+	// Set the text origin to be the center
+	text.setOrigin({
+		textBounds.position.x + (textBounds.size.x / 2.0f),
+		textBounds.position.y + (textBounds.size.y / 2.0f)
+		});
 
-	// Y position slight adjustment
-	text.setPosition({ xPos, yPos - (textBounds.size.y / 2.0f) });
+	// Set the text position to be the center, which should work since the origin is the center now as well
+	text.setPosition({
+		pos.x + (buttonShape.getSize().x / 2.0f),
+		pos.y + (buttonShape.getSize().y / 2.0f)
+		});
 }
 
 void Button::drawTo(sf::RenderWindow& window)
@@ -45,7 +50,7 @@ bool Button::isMouseOver(sf::RenderWindow& window)
 	return false;
 }
 
-void Button::setBackColor(sf::Color color)
+void Button::setTextColor(sf::Color color)
 {
-	buttonShape.setFillColor(color);
+	text.setFillColor(color);
 }

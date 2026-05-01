@@ -40,3 +40,8 @@ vcpkg_installed/
 .vcpkg-root
 vcpkg-packages/
 /PA9/PA9/x64
+PA9/PA9/Debug/PA9.log
+PA9/PA9/Release/PA9.Build.CppClean.log
+PA9/PA9/Release/PA9.log
+/PA9/PA9/Release
+/PA9/PA9/Debug

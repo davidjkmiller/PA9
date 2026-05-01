@@ -191,22 +191,23 @@ int Player::score(Card* board)
 int Player::isRoyalFlush(Card* combo)
 {
 	//if flush and an ace-high straight
-	if (isFlush(combo) && (combo[0].getSuit() == "Ace" && combo[1].getSuit() == "Ten" && combo[2].getSuit() == "Jack" && combo[3].getSuit() == "Queen" && combo[4].getSuit() == "King"))
+	if (isStraightFlush(combo) == 8 && getHandScore() == 47)
 	{
 		//no handScore needs to be set since a royal flush is a set deck
 		return 9;
 	}
-	else return 0;
+
+	return 0;
 }
 
 int Player::isStraightFlush(Card* combo)
 {
-	if (isFlush(combo) + isStraight(combo) == 9)
+	if (isFlush(combo) == 5 && isStraight(combo) == 4)
 	{
-		setHandScore(combo[0].getRank() + combo[1].getRank() + combo[2].getRank() + combo[3].getRank() + combo[4].getRank());
 		return 8;
 	}
-	else return 0;
+
+	return 0;
 }
 
 int Player::isFourOfAKind(Card* combo)
@@ -335,8 +336,12 @@ int Player::isStraight(Card* combo)
 	}
 
 	//check if it's an ace-high straight (10-J-Q-K-A)
-	if (rank[0] == 1 && rank[1] == 10 && rank[2] == 11 && rank[3] == 12 && rank[4] == 13) return 4;
-	
+	if (rank[0] == 1 && rank[1] == 10 && rank[2] == 11 && rank[3] == 12 && rank[4] == 13)
+	{
+		setHandScore(47);
+		return 4;
+	}
+
 	//check for a normal straight
 	for (int j = 0; j < 4; ++j)
 	{
@@ -501,7 +506,6 @@ float CPU::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) 
 	{
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		pressAnyKey();
 
 		return currentBet;
 	}
@@ -510,14 +514,12 @@ float CPU::play(float& prizePool, float& currentBet, Card* Board, int uiChoice) 
 		currentBet *= 2; //double the bet
 		setBalance(-currentBet);
 		prizePool += currentBet;
-		pressAnyKey();
 
 		return currentBet;
 	}
 	else if (choice == 3) //FOLD
 	{
 		setFoldStatus(1);
-		pressAnyKey();
 
 		return 0;
 	}

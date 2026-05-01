@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "Deck.hpp"
 #include "Button.hpp"
+#include "ImageButton.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -17,10 +18,18 @@ enum GameState { TITLE_SCREEN, TRANSITIONING, MAIN_MENU, PLAYING, EXITING };
 enum PlayPhase { DEALING, BETTING, SHOWDOWN };
 enum RoundStage { WAITING_TO_START, PRE_FLOP, FLOP, TURN, RIVER };
 
+// Global constants for changing sizes for testing, etc.
+namespace Constants {
+	inline constexpr int SCREEN_WIDTH = 1920;
+	inline constexpr int SCREEN_HEIGHT = 1080;
+	inline constexpr float SCREEN_WIDTH_FLOAT = 1920.f;
+}
+
 class TexasHoldem
 {
 public:
 	TexasHoldem();
+	~TexasHoldem();
 
 	//runs our Texas Hold'em game
 	void runApp();
@@ -59,24 +68,35 @@ private:
 
 	sf::Clock cpuThinkTimer;
 
-	// Assets
+	// Textures
 	sf::Texture titleTexture;
 	sf::Texture menuTexture;
 	sf::Texture gameBgTexture;
 	sf::Font mainFont;
 
+	sf::Texture playButtonTexture;
+	sf::Texture rulebuttonTexture;
+	sf::Texture tipDevsButtonTexture;
+	sf::Texture creditsButtonTexture;
+	sf::Texture exitButtonTexture;
+
 	std::map<std::string, sf::Texture> cardTextures;
 	sf::Sprite backgroundSprite;
 
-	// UI Elements 
-	Button* playButton;
-	Button* exitButton;
+	// Main menu buttions
+	ImageButton* playButton;
+	ImageButton* rulesButton;
+	ImageButton* tipButton;
+	ImageButton* creditsButton;
+	ImageButton* exitButton;
+
+	// Gameplay buttons
 	Button* dealButton;
 	Button* callButton;
 	Button* raiseButton;
 	Button* foldButton;
 
-	// GUI Text Displays
+	// GUI text displays
 	sf::Text winnerTextDisplay;
 	sf::Text actionLogText;
 	sf::Text potText;
