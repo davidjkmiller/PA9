@@ -1,5 +1,12 @@
 (README generated with AI)
+
 Texas Hold'em (C++ & SFML 3)
+
+Developed by:
+Caroline Fischer - Section 10L
+David Miller - Section 10L
+James (Owen) Tweedt - Section 02L
+Benjamin Siev - Section 02L
 
 A full-featured Texas Hold'em Poker game built in C++ using the SFML 3 library for rendering, window management, and audio. The game features a graphical user interface, intelligent hand-scoring logic, single-player vs. CPU gameplay, and an integrated test suite.
 
