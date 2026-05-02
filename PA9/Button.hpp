@@ -7,7 +7,6 @@
 class Button : public UIElement
 {
 public:
-	// Constructor to set up the button's visuals
 	Button(const sf::Font& font, std::string buttonText, sf::Vector2f buttonSize, int charSize, sf::Color bgColor, sf::Color textColor);
 
 	// Set the position of the button
@@ -19,6 +18,7 @@ public:
 
 	// Check if the mouse is currently over the button
 	bool isMouseOver(sf::RenderWindow& window) override;
+
 	void setTextColor(sf::Color color);
 	void setBackColor(sf::Color color);
 

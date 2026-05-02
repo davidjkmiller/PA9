@@ -67,7 +67,7 @@ void TexasHoldem::loadAssets()
 	if (!tipDevsButtonTexture.loadFromFile("Assets/menus/tipdevs_menu.png")) std::cout << "Missing tipdevs_menu.png\n";
 	if (!creditsButtonTexture.loadFromFile("Assets/menus/credits_menu.png")) std::cout << "Missing credits_menu.png\n";
 	if (!exitButtonTexture.loadFromFile("Assets/menus/exit_menu.png")) std::cout << "Missing exit_menu.png\n";
-	// if (!multiButtonTexture.loadFromFile("Assets/menus/multi_menu.png")) std::cout << "Missing multi_menu.png\n";
+	if (!multiButtonTexture.loadFromFile("Assets/menus/multiplayer_menu.png")) std::cout << "Missing multi_menu.png\n";
 
 	backgroundSprite.setTexture(titleTexture, true);
 	sf::Vector2u textureSize = titleTexture.getSize();
@@ -91,6 +91,10 @@ void TexasHoldem::loadAssets()
 	actionLogText.setFillColor(sf::Color::White);
 	actionLogText.setPosition({ Constants::LOG_TEXT_X, Constants::LOG_TEXT_Y });
 
+	// Asked AI to go through and organize/comment the code without modifying it
+	// Prompt: Can you go through my code and organize it to be more readable and add comments where necessary. Do not add explanations for things like "why a destructor is needed", do not modify the actual code.
+	// Related functions/variables were grouped together
+
 	potText.setFillColor(sf::Color::White);
 	potText.setPosition({ 50.f, 50.f });
 	betText.setFillColor(sf::Color::White);
@@ -100,30 +104,29 @@ void TexasHoldem::loadAssets()
 
 	float centerX = Constants::SCREEN_WIDTH_FLOAT / 2.0f;
 
-	playButton = new ImageButton(playButtonTexture, { centerX, 200.f });
-	rulesButton = new ImageButton(rulebuttonTexture, { centerX, 350.f });
-	tipButton = new ImageButton(tipDevsButtonTexture, { centerX, 500.f });
-	creditsButton = new ImageButton(creditsButtonTexture, { centerX, 650.f });
-	exitButton = new ImageButton(exitButtonTexture, { centerX, 800.f });
+	// Initialize Menu Buttons
+	playButton = new ImageButton(playButtonTexture, { centerX, 215.f });
+	multiButton = new ImageButton(multiButtonTexture, { centerX, 345.f });
+	rulesButton = new ImageButton(rulebuttonTexture, { centerX, 475.f });
+	tipButton = new ImageButton(tipDevsButtonTexture, { centerX, 605.f });
+	creditsButton = new ImageButton(creditsButtonTexture, { centerX, 735.f });
+	exitButton = new ImageButton(exitButtonTexture, { centerX, 865.f });
 
+	// Initialize Action Buttons
 	dealButton = new Button(mainFont, "DEAL NEXT", { 280.f, 80.f }, 55, sf::Color::Transparent, sf::Color::Black);
-	dealButton->setPosition({ Constants::DEAL_BTN_X, Constants::ACTION_BTN_START_Y });
-
 	callButton = new Button(mainFont, "CALL", { 200.f, 80.f }, 55, sf::Color(180, 150, 0), sf::Color::White);
-	callButton->setPosition({ Constants::ACTION_BTN_START_X, Constants::ACTION_BTN_START_Y });
-
 	raiseButton = new Button(mainFont, "RAISE", { 200.f, 80.f }, 55, sf::Color(0, 120, 0), sf::Color::White);
-	raiseButton->setPosition({ Constants::ACTION_BTN_START_X + Constants::ACTION_BTN_SPACING, Constants::ACTION_BTN_START_Y });
-
 	foldButton = new Button(mainFont, "FOLD", { 200.f, 80.f }, 55, sf::Color(150, 0, 0), sf::Color::White);
+
+	// Set Positions for Action Buttons
+	dealButton->setPosition({ Constants::DEAL_BTN_X, Constants::ACTION_BTN_START_Y });
+	callButton->setPosition({ Constants::ACTION_BTN_START_X, Constants::ACTION_BTN_START_Y });
+	raiseButton->setPosition({ Constants::ACTION_BTN_START_X + Constants::ACTION_BTN_SPACING, Constants::ACTION_BTN_START_Y });
 	foldButton->setPosition({ Constants::ACTION_BTN_START_X + (Constants::ACTION_BTN_SPACING * 2), Constants::ACTION_BTN_START_Y });
 
-	// multiButton = new ImageButton(multiButtonTexture, { centerX, 280.f });
-	float multiX = centerX - 150.f;
-	multiButton = new Button(mainFont, "MULTIPLAYER", { 300.f, 80.f }, 45, sf::Color(0, 50, 150), sf::Color::White);
-	multiButton->setPosition({ 200.f, 280.f });
-
+	// Register UI Elements for cleanup
 	uiElements.push_back(playButton);
+	uiElements.push_back(multiButton);
 	uiElements.push_back(rulesButton);
 	uiElements.push_back(tipButton);
 	uiElements.push_back(creditsButton);
@@ -132,7 +135,6 @@ void TexasHoldem::loadAssets()
 	uiElements.push_back(callButton);
 	uiElements.push_back(raiseButton);
 	uiElements.push_back(foldButton);
-	uiElements.push_back(multiButton);
 }
 
 std::string TexasHoldem::getFilenameForCard(Card card)
@@ -1028,11 +1030,8 @@ void TexasHoldem::update()
 	}
 	else if (currentState == MAIN_MENU)
 	{
-		if (multiButton->isMouseOver(window)) multiButton->setBackColor(sf::Color(0, 100, 200)); // Lighter Blue
-		else multiButton->setBackColor(sf::Color(0, 50, 150));
-
 		playButton->setHoverEffect(playButton->isMouseOver(window));
-		//multiButton->setHoverEffect(multiButton->isMouseOver(window));
+		multiButton->setHoverEffect(multiButton->isMouseOver(window));
 		rulesButton->setHoverEffect(rulesButton->isMouseOver(window));
 		tipButton->setHoverEffect(tipButton->isMouseOver(window));
 		creditsButton->setHoverEffect(creditsButton->isMouseOver(window));
@@ -1040,17 +1039,25 @@ void TexasHoldem::update()
 	}
 	else if (currentState == PLAYING)
 	{
-		if (dealButton->isMouseOver(window)) dealButton->setBackColor(sf::Color(200, 200, 200));
-		else dealButton->setBackColor(sf::Color::Transparent);
+		// Asked AI to go through and organize/comment the code without modifying it
+		// Prompt: Can you go through my code and organize it to be more readable and add comments where necessary. Do not add explanations for things like "why a destructor is needed", do not modify the actual code.
+		// Code was indented for easier readability
 
-		if (callButton->isMouseOver(window)) callButton->setBackColor(sf::Color(255, 210, 0));
-		else callButton->setBackColor(sf::Color(180, 150, 0));
+		// Action button hover effects
+		if (dealButton->isMouseOver(window))  dealButton->setBackColor(sf::Color(200, 200, 200));
+		else                                  dealButton->setBackColor(sf::Color::Transparent);
+
+		if (callButton->isMouseOver(window))  callButton->setBackColor(sf::Color(255, 210, 0));
+		else                                  callButton->setBackColor(sf::Color(180, 150, 0));
 
 		if (raiseButton->isMouseOver(window)) raiseButton->setBackColor(sf::Color(0, 180, 0));
-		else raiseButton->setBackColor(sf::Color(0, 120, 0));
+		else                                  raiseButton->setBackColor(sf::Color(0, 120, 0));
 
-		if (foldButton->isMouseOver(window)) foldButton->setBackColor(sf::Color(220, 0, 0));
-		else foldButton->setBackColor(sf::Color(150, 0, 0));
+		if (foldButton->isMouseOver(window))  foldButton->setBackColor(sf::Color(220, 0, 0));
+		else                                  foldButton->setBackColor(sf::Color(150, 0, 0));
+
+		// CPU and Client-Side Network Player Turns, and Host receiving network turns
+		if (currentPhase == BETTING && turnOrder[activePlayerIndex] != &p1)
 
 		// CPU and Client-Side Network Player Turns, and Host receiving network turns
 		if (currentPhase == BETTING && turnOrder[activePlayerIndex] != &p1)

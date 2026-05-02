@@ -27,6 +27,7 @@
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="NetworkPlayer.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Tests.cpp" />
     <ClCompile Include="TexasHoldem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,7 @@
     <ClInclude Include="NetworkManager.hpp" />
     <ClInclude Include="NetworkPlayer.hpp" />
     <ClInclude Include="Player.hpp" />
+    <ClInclude Include="Tests.hpp" />
     <ClInclude Include="TexasHoldem.hpp" />
     <ClInclude Include="UIElement.hpp" />
   </ItemGroup>

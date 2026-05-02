@@ -1,3 +1,7 @@
+// Asked AI to go through and organize/comment the code without modifying it
+// Prompt: Can you go through my code and organize it to be more readable and add comments where necessary. Do not add explanations for things like "why a destructor is needed", do not modify the actual code.
+// Related variables and functions were grouped together
+
 #pragma once
 
 //Headers
@@ -96,23 +100,23 @@ private:
 	sf::Texture tipDevsButtonTexture;
 	sf::Texture creditsButtonTexture;
 	sf::Texture exitButtonTexture;
-	// sf::Texture multiButtonTexture;
-	Button* multiButton;
+	sf::Texture multiButtonTexture;
 
 	std::map<std::string, sf::Texture> cardTextures;
 	sf::Sprite backgroundSprite;
 
-	// Vector to hold all UIElements for easy rendering and cleanup
+	// UI Elements Container
 	std::vector<UIElement*> uiElements;
 
-	// Main menu buttons (kept for easy input checking)
+	// Menu Buttons
 	ImageButton* playButton;
 	ImageButton* rulesButton;
 	ImageButton* tipButton;
 	ImageButton* creditsButton;
 	ImageButton* exitButton;
-	//ImageButton* multiButton;
+	ImageButton* multiButton;
 
+	// Action Buttons
 	Button* dealButton;
 	Button* callButton;
 	Button* raiseButton;
