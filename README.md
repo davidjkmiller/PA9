@@ -8,6 +8,8 @@ David Miller - Section 10L
 James (Owen) Tweedt - Section 02L
 Benjamin Siev - Section 02L
 
+Video link: https://youtu.be/cox-3bhto3M
+
 A full-featured Texas Hold'em Poker game built in C++ using the SFML 3 library for rendering, window management, and audio. The game features a graphical user interface, intelligent hand-scoring logic, single-player vs. CPU gameplay, and an integrated test suite.
 
 🃏 How to Play Texas Hold'em
