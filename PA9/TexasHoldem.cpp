@@ -302,6 +302,11 @@ void TexasHoldem::advanceRoundStage()
 		return;
 	}
 
+	if (isMultiplayer && mpNetwork.getmpIsHost())
+	{
+		mpNetwork.sendGameState("stage:" + std::to_string((int)currentStage)); //send the new stage to the client so they can update their board as well
+	}
+
 	currentPhase = BETTING;
 	playersActed = 0;
 	activePlayerIndex = 0;
@@ -366,7 +371,85 @@ void TexasHoldem::processEvents()
 						"Owen Tweedt\n"
 						"Benjamin Siev\n" << endl;
 					else if (exitButton->isMouseOver(window)) currentState = EXITING;
-					else if (multiButton->isMouseOver(window)) std::cout << "Test -> Multiplayer clicked\n";
+					else if (multiButton->isMouseOver(window)) //if multiplayer button is clicked
+					{
+						int multiChoice = 0;
+						system("cls");
+						std::cout << "1. Host Game\n2. Join Game\n"; //cmd prompts for hosting or joining a game
+						std::cin >> multiChoice;
+
+						if (multiChoice == 1)
+						{
+							if (mpNetwork.startHost())
+							{
+								std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
+								int numPlayers = 0;
+								do {
+									std::cout << "How many players? (2-4): ";
+									std::cin >> numPlayers;
+								} while (numPlayers < 2 || numPlayers > 4);
+
+								while (mpNetwork.getmpPlayerCount() < numPlayers) {
+									mpNetwork.update();
+									cout << "Waiting for players... " << mpNetwork.getmpPlayerCount() << "/" << numPlayers << "\r";
+								}
+								std::cout << "\nPlayers connected! Starting Game..." << std::endl;
+								
+								//clean up network players after game ends if they exist
+								if (np1) { delete np1; np1 = nullptr; }
+								if (np2) { delete np2; np2 = nullptr; }
+								if (np3) { delete np3; np3 = nullptr; }
+
+								np1 = new NetworkPlayer(mpNetwork);
+								np2 = new NetworkPlayer(mpNetwork);
+								np3 = new NetworkPlayer(mpNetwork);
+								isMultiplayer = true;
+
+								//switch to the playing state and start the game loop
+								chooseDealer(p1, *np1, *np2, *np3);
+								backgroundSprite.setTexture(gameBgTexture, true);
+								sf::Vector2u textureSize = gameBgTexture.getSize();
+								backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT_FLOAT / textureSize.y });
+								currentState = PLAYING;
+								startNewRound();
+							}
+							else {
+								std::cout << "Failed to host game." << std::endl;
+							}
+						}
+						else if (multiChoice == 2)
+						{
+							std::string ipString;
+							std::cout << "Enter host's IP address: ";
+							std::cin >> ipString;
+
+							auto hostIp = sf::IpAddress::resolve(ipString);
+							if (hostIp && mpNetwork.joinGame(hostIp.value())) {
+								std::cout << "Connected to host." << std::endl;
+
+								//clean up network players after game ends if they exist
+								if (np1) { delete np1; np1 = nullptr; }
+								if (np2) { delete np2; np2 = nullptr; }
+								if (np3) { delete np3; np3 = nullptr; }
+
+								np1 = new NetworkPlayer(mpNetwork);
+								np2 = new NetworkPlayer(mpNetwork);
+								np3 = new NetworkPlayer(mpNetwork);
+								isMultiplayer = true;
+
+								//switch to the playing state and start the game loop
+								chooseDealer(p1, *np1, *np2, *np3);
+								backgroundSprite.setTexture(gameBgTexture, true);
+								sf::Vector2u textureSize = gameBgTexture.getSize();
+								backgroundSprite.setScale({ Constants::SCREEN_WIDTH_FLOAT / textureSize.x, Constants::SCREEN_HEIGHT_FLOAT / textureSize.y });
+								currentState = PLAYING;
+								startNewRound();
+							}
+							else {
+								std::cout << "Failed to connect to host." << std::endl;
+							}
+						}
+					}
 				}
 				else if (currentState == PLAYING)
 				{
@@ -402,22 +485,46 @@ void TexasHoldem::processEvents()
 						}
 					}
 
-					if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 && !p1.getFoldStatus())
+					if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 || waitingForNetworkInput && !p1.getFoldStatus())
 					{
 						if (callButton->isMouseOver(window)) {
-							p1.play(prizePool, currentBet, boardCards, 1);
-							actionLogText.setString("YOU CALLED.");
-							advanceTurn();
+							if (waitingForNetworkInput) {
+								mpNetwork.sendPacket("call");
+								waitingForNetworkInput = false;
+								advanceTurn();
+							}
+							else
+							{
+								p1.play(prizePool, currentBet, boardCards, 1);
+								actionLogText.setString("YOU CALLED.");
+								advanceTurn();
+							}
 						}
 						else if (raiseButton->isMouseOver(window)) {
-							p1.play(prizePool, currentBet, boardCards, 2);
-							actionLogText.setString("YOU RAISED!");
-							advanceTurn();
+							if (waitingForNetworkInput) {
+								mpNetwork.sendPacket("raise");
+								waitingForNetworkInput = false;
+								advanceTurn();
+							}
+							else
+							{
+								p1.play(prizePool, currentBet, boardCards, 2);
+								actionLogText.setString("YOU RAISED!");
+								advanceTurn();
+							}
 						}
 						else if (foldButton->isMouseOver(window)) {
-							p1.play(prizePool, currentBet, boardCards, 3);
-							actionLogText.setString("YOU FOLDED.");
-							advanceTurn();
+							if (waitingForNetworkInput) {
+								mpNetwork.sendPacket("fold");
+								waitingForNetworkInput = false;
+								advanceTurn();
+							}
+							else
+							{
+								p1.play(prizePool, currentBet, boardCards, 3);
+								actionLogText.setString("YOU FOLDED.");
+								advanceTurn();
+							}
 						}
 					}
 				}
@@ -459,53 +566,7 @@ void TexasHoldem::displayMenu()
 		break;
 	case MULTIPLAYER:
 	{
-		int multiChoice = 0;
-		system("cls");
-		std::cout << "1. Host Game\n2. Join Game\n";
-		std::cin >> multiChoice;
-
-		if (multiChoice == 1)
-		{
-			if (mpNetwork.startHost())
-			{
-				std::cout << "Hosting on port 7777. Waiting for players..." << std::endl;
-				int numPlayers = 0;
-				do {
-					std::cout << "How many players? (2-4): ";
-					std::cin >> numPlayers;
-				} while (numPlayers < 2 || numPlayers > 4);
-
-				while (mpNetwork.getmpPlayerCount() < numPlayers) {
-					mpNetwork.update();
-					cout << "Waiting for players... " << mpNetwork.getmpPlayerCount() << "/" << numPlayers << "\r";
-				}
-				std::cout << "\nPlayers connected! Starting Game..." << std::endl;
-
-				NetworkPlayer np1(mpNetwork);
-				NetworkPlayer np2(mpNetwork);
-				NetworkPlayer np3(mpNetwork);
-
-				chooseDealer(p1, np1, np2, np3);
-				playGame(&p1, &np1, &np2, &np3);
-			}
-			else {
-				std::cout << "Failed to host game." << std::endl;
-			}
-		}
-		else if (multiChoice == 2)
-		{
-			std::string ipString;
-			std::cout << "Enter host's IP address: ";
-			std::cin >> ipString;
-
-			auto hostIp = sf::IpAddress::resolve(ipString);
-			if (hostIp && mpNetwork.joinGame(hostIp.value())) {
-				std::cout << "Connected to host." << std::endl;
-			}
-			else {
-				std::cout << "Failed to connect to host." << std::endl;
-			}
-		}
+		//EMPTY - MOVED ELSEWHERE AND REPLACED
 		break;
 	}
 	case BACK:
@@ -525,33 +586,44 @@ void TexasHoldem::rotateDealer()
 	c3.setDealer(0);
 	c4.setDealer(0);
 
+	if (isMultiplayer && np1 && np2 && np3)
+	{
+		np1->setDealer(0);
+		np2->setDealer(0);
+		np3->setDealer(0);
+	}
+
+	Player* second = isMultiplayer ? (Player*)np1 : (Player*)&c2;
+	Player* third = isMultiplayer ? (Player*)np2 : (Player*)&c3;
+	Player* fourth = isMultiplayer ? (Player*)np3 : (Player*)&c4;
+
 	if (dealerNum == 1) {
 		p1.setDealer(1);
 		Dealer = &p1;
-		player1 = &c2;
-		player2 = &c3;
-		player3 = &c4;
+		player1 = second;
+		player2 = third;
+		player3 = fourth;
 	}
 	else if (dealerNum == 2) {
 		c2.setDealer(1);
-		Dealer = &c2;
-		player1 = &c3;
-		player2 = &c4;
+		Dealer = second;
+		player1 = third;
+		player2 = fourth;
 		player3 = &p1;
 	}
 	else if (dealerNum == 3) {
 		c3.setDealer(1);
-		Dealer = &c3;
-		player1 = &c4;
+		Dealer = third;
+		player1 = fourth;
 		player2 = &p1;
-		player3 = &c2;
+		player3 = second;
 	}
 	else if (dealerNum == 4) {
 		c4.setDealer(1);
-		Dealer = &c4;
+		Dealer = fourth;
 		player1 = &p1;
-		player2 = &c2;
-		player3 = &c3;
+		player2 = second;
+		player3 = third;
 	}
 
 	turnOrder[0] = player1; 
@@ -980,29 +1052,58 @@ void TexasHoldem::update()
 		if (foldButton->isMouseOver(window)) foldButton->setBackColor(sf::Color(220, 0, 0));
 		else foldButton->setBackColor(sf::Color(150, 0, 0));
 
-		// CPU turns
+		// CPU and Client-Side Network Player Turns, and Host receiving network turns
 		if (currentPhase == BETTING && turnOrder[activePlayerIndex] != &p1)
 		{
-			Player* cpuPlayer = turnOrder[activePlayerIndex];
+			Player* currentPlayer = turnOrder[activePlayerIndex];
 
-			if (cpuThinkTimer.getElapsedTime().asSeconds() > 2.f)
+			if (isMultiplayer && mpNetwork.getmpIsHost() && dynamic_cast<NetworkPlayer*>(currentPlayer))
 			{
-				if (!cpuPlayer->getFoldStatus())
+				std::string action = mpNetwork.receivePacket(); //receive packet
+				if (!action.empty())
 				{
-					float oldBet = currentBet;
-					float result = cpuPlayer->play(prizePool, currentBet, boardCards, 0);
+					advanceTurn();
+				}
+			}
 
-					if (result == 0 && cpuPlayer->getFoldStatus()) {
-						actionLogText.setString(cpuPlayer->getPlayerID() + " FOLDED.");
-					}
-					else if (currentBet > oldBet) {
-						actionLogText.setString(cpuPlayer->getPlayerID() + " RAISED TO $" + std::to_string((int)currentBet));
-					}
-					else {
-						actionLogText.setString(cpuPlayer->getPlayerID() + " CALLED.");
+			//Client-Side Network Player Turn
+			if (isMultiplayer && !mpNetwork.getmpIsHost() && dynamic_cast<NetworkPlayer*>(currentPlayer))
+			{
+				waitingForNetworkInput = true;
+				if (isMultiplayer && !mpNetwork.getmpIsHost())
+				{
+					std::string state = mpNetwork.receiveGameState(); //receive game state updates from host
+					if (!state.empty() && state.substr(0, 6) == "stage:")
+					{
+						int stage = std::stoi(state.substr(6));
+						currentStage = (RoundStage)stage;
+						advanceRoundStage();
 					}
 				}
-				advanceTurn();
+			}
+			else
+			{
+				Player* cpuPlayer = turnOrder[activePlayerIndex];
+
+				if (cpuThinkTimer.getElapsedTime().asSeconds() > 2.f)
+				{
+					if (!cpuPlayer->getFoldStatus())
+					{
+						float oldBet = currentBet;
+						float result = cpuPlayer->play(prizePool, currentBet, boardCards, 0);
+
+						if (result == 0 && cpuPlayer->getFoldStatus()) {
+							actionLogText.setString(cpuPlayer->getPlayerID() + " FOLDED.");
+						}
+						else if (currentBet > oldBet) {
+							actionLogText.setString(cpuPlayer->getPlayerID() + " RAISED TO $" + std::to_string((int)currentBet));
+						}
+						else {
+							actionLogText.setString(cpuPlayer->getPlayerID() + " CALLED.");
+						}
+					}
+					advanceTurn();
+				}
 			}
 		}
 	}
@@ -1056,7 +1157,7 @@ void TexasHoldem::render()
 			}
 			dealButton->drawTo(window);
 		}
-		else if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 && !p1.getFoldStatus())
+		else if (currentPhase == BETTING && turnOrder[activePlayerIndex] == &p1 || waitingForNetworkInput && !p1.getFoldStatus())
 		{
 			callButton->drawTo(window);
 			raiseButton->drawTo(window);

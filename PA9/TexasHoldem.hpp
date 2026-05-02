@@ -144,4 +144,11 @@ private:
 
 	std::vector<sf::Sprite> playerHandSprites;
 	std::vector<sf::Sprite> boardSprites;
+
+	//Network players for multiplayer
+	NetworkPlayer* np1 = nullptr;
+	NetworkPlayer* np2 = nullptr;
+	NetworkPlayer* np3 = nullptr;
+	bool isMultiplayer = false;
+	bool waitingForNetworkInput = false;
 };

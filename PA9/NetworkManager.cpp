@@ -179,3 +179,13 @@ void NetworkManager::update()
 		}
 	}
 }
+
+void NetworkManager::sendGameState(std::string state)
+{
+	sendPacket(state);
+}
+
+std::string NetworkManager::receiveGameState()
+{
+	return receivePacket();
+}
