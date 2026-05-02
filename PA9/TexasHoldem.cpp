@@ -302,6 +302,11 @@ void TexasHoldem::advanceRoundStage()
 		return;
 	}
 
+	if (isMultiplayer && mpNetwork.getmpIsHost())
+	{
+		mpNetwork.sendGameState("stage:" + std::to_string((int)currentStage)); //send the new stage to the client so they can update their board as well
+	}
+
 	currentPhase = BETTING;
 	playersActed = 0;
 	activePlayerIndex = 0;
@@ -1065,6 +1070,16 @@ void TexasHoldem::update()
 			if (isMultiplayer && !mpNetwork.getmpIsHost() && dynamic_cast<NetworkPlayer*>(currentPlayer))
 			{
 				waitingForNetworkInput = true;
+				if (isMultiplayer && !mpNetwork.getmpIsHost())
+				{
+					std::string state = mpNetwork.receiveGameState(); //receive game state updates from host
+					if (!state.empty() && state.substr(0, 6) == "stage:")
+					{
+						int stage = std::stoi(state.substr(6));
+						currentStage = (RoundStage)stage;
+						advanceRoundStage();
+					}
+				}
 			}
 			else
 			{

@@ -24,7 +24,8 @@ public:
 	bool sendPacket(std::string data); //sends the game data
 	std::string receivePacket(); //receives the game data
 	void update(); //updates the game each loop in order to check for changes regarding packets and the network
-
+	void sendGameState(std::string state);
+	std::string receiveGameState();
 
 private:
 	bool mpIsHost;
